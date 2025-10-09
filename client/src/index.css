@@ -1,0 +1,282 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
+
+@layer utilities {
+  .border-default {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+}
+
+
+
+:root {
+  --background: hsl(210, 40%, 98%);
+  --foreground: hsl(210, 40%, 8%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(210, 40%, 8%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(210, 40%, 8%);
+  --primary: hsl(217, 91%, 45%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(151, 81%, 36%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(210, 40%, 45%);
+  --accent: hsl(21, 90%, 48%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --border: hsl(210, 40%, 90%);
+  --input: hsl(210, 40%, 96%);
+  --ring: hsl(217, 91%, 45%);
+  --chart-1: hsl(217, 91%, 45%);
+  --chart-2: hsl(151, 81%, 36%);
+  --chart-3: hsl(21, 90%, 48%);
+  --chart-4: hsl(147, 78%, 42%);
+  --chart-5: hsl(341, 75%, 51%);
+  --sidebar: hsl(0, 0%, 100%);
+  --sidebar-foreground: hsl(210, 40%, 8%);
+  --sidebar-primary: hsl(217, 91%, 45%);
+  --sidebar-primary-foreground: hsl(0, 0%, 98%);
+  --sidebar-accent: hsl(210, 40%, 96%);
+  --sidebar-accent-foreground: hsl(217, 91%, 45%);
+  --sidebar-border: hsl(210, 40%, 90%);
+  --sidebar-ring: hsl(217, 91%, 45%);
+  --font-sans: 'Inter', 'Open Sans', system-ui, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 2px 0px 0px hsl(217, 91%, 45%, 0.00);
+  --shadow-xs: 0px 2px 0px 0px hsl(217, 91%, 45%, 0.00);
+  --shadow-sm: 0px 2px 0px 0px hsl(217, 91%, 45%, 0.00), 0px 1px 2px -1px hsl(217, 91%, 45%, 0.00);
+  --shadow: 0px 2px 0px 0px hsl(217, 91%, 45%, 0.00), 0px 1px 2px -1px hsl(217, 91%, 45%, 0.00);
+  --shadow-md: 0px 2px 0px 0px hsl(217, 91%, 45%, 0.00), 0px 2px 4px -1px hsl(217, 91%, 45%, 0.00);
+  --shadow-lg: 0px 2px 0px 0px hsl(217, 91%, 45%, 0.00), 0px 4px 6px -1px hsl(217, 91%, 45%, 0.00);
+  --shadow-xl: 0px 2px 0px 0px hsl(217, 91%, 45%, 0.00), 0px 8px 10px -1px hsl(217, 91%, 45%, 0.00);
+  --shadow-2xl: 0px 2px 0px 0px hsl(217, 91%, 45%, 0.00);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: hsl(0, 0%, 0%);
+  --foreground: hsl(200, 6.67%, 91.18%);
+  --card: hsl(228, 9.8%, 10%);
+  --card-foreground: hsl(0, 0%, 85.1%);
+  --popover: hsl(0, 0%, 0%);
+  --popover-foreground: hsl(200, 6.67%, 91.18%);
+  --primary: hsl(217, 87%, 53%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(195, 15%, 95%);
+  --secondary-foreground: hsl(210, 25%, 7.84%);
+  --muted: hsl(0, 0%, 9.41%);
+  --muted-foreground: hsl(210, 3.39%, 46.27%);
+  --accent: hsl(206, 70%, 7.84%);
+  --accent-foreground: hsl(217, 87%, 53%);
+  --destructive: hsl(356, 90.6%, 54.31%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --border: hsl(210, 5.26%, 14.9%);
+  --input: hsl(208, 27.66%, 18.43%);
+  --ring: hsl(217, 89%, 53%);
+  --chart-1: hsl(217, 88%, 53%);
+  --chart-2: hsl(160, 100%, 36%);
+  --chart-3: hsl(42, 93%, 56%);
+  --chart-4: hsl(147, 78%, 42%);
+  --chart-5: hsl(341, 75%, 51%);
+  --sidebar: hsl(228, 9.8%, 10%);
+  --sidebar-foreground: hsl(0, 0%, 85.1%);
+  --sidebar-primary: hsl(217, 89%, 53%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(206, 70%, 7.84%);
+  --sidebar-accent-foreground: hsl(217, 87%, 53%);
+  --sidebar-border: hsl(206, 15.79%, 26.08%);
+  --sidebar-ring: hsl(217, 89%, 53%);
+  --font-sans: 'Inter', 'Open Sans', system-ui, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 2px 0px 0px hsl(217, 89%, 53%, 0.00);
+  --shadow-xs: 0px 2px 0px 0px hsl(217, 89%, 53%, 0.00);
+  --shadow-sm: 0px 2px 0px 0px hsl(217, 89%, 53%, 0.00), 0px 1px 2px -1px hsl(217, 89%, 53%, 0.00);
+  --shadow: 0px 2px 0px 0px hsl(217, 89%, 53%, 0.00), 0px 1px 2px -1px hsl(217, 89%, 53%, 0.00);
+  --shadow-md: 0px 2px 0px 0px hsl(217, 89%, 53%, 0.00), 0px 2px 4px -1px hsl(217, 89%, 53%, 0.00);
+  --shadow-lg: 0px 2px 0px 0px hsl(217, 89%, 53%, 0.00), 0px 4px 6px -1px hsl(217, 89%, 53%, 0.00);
+  --shadow-xl: 0px 2px 0px 0px hsl(217, 89%, 53%, 0.00), 0px 8px 10px -1px hsl(217, 89%, 53%, 0.00);
+  --shadow-2xl: 0px 2px 0px 0px hsl(217, 89%, 53%, 0.00);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    border-width: 1px;
+    border-style: solid;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
+
+/* Custom animations and styles */
+.chat-bubble {
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.voice-recording {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.offline-indicator {
+  background: linear-gradient(45deg, #ff6b6b, #ffa500);
+}
+
+.health-card {
+  transition: all 0.3s ease;
+}
+
+.health-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.emergency-button {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  animation: emergency-glow 2s infinite alternate;
+}
+
+@keyframes emergency-glow {
+  from { box-shadow: 0 0 20px rgba(220, 38, 38, 0.5); }
+  to { box-shadow: 0 0 30px rgba(220, 38, 38, 0.8); }
+}
+
+/* Dark mode specific styles */
+.dark .emergency-button {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+
+.dark .offline-indicator {
+  background: linear-gradient(45deg, #dc2626, #f59e0b);
+}
+
+/* Loading and typing indicators */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: hsl(var(--muted-foreground));
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes typing {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Voice input visual feedback */
+.voice-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.voice-bar {
+  width: 4px;
+  height: 20px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+  animation: voice-wave 1s infinite ease-in-out;
+}
+
+.voice-bar:nth-child(1) { animation-delay: 0s; }
+.voice-bar:nth-child(2) { animation-delay: 0.1s; }
+.voice-bar:nth-child(3) { animation-delay: 0.2s; }
+.voice-bar:nth-child(4) { animation-delay: 0.3s; }
+.voice-bar:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes voice-wave {
+  0%, 40%, 100% {
+    transform: scaleY(0.4);
+  }
+  20% {
+    transform: scaleY(1);
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .chat-bubble {
+    max-width: 90%;
+  }
+  
+  .health-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: hsl(210, 40%, 50%);
+    --muted: hsl(210, 40%, 85%);
+  }
+  
+  .dark {
+    --border: hsl(210, 40%, 70%);
+    --muted: hsl(210, 40%, 20%);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .voice-recording,
+  .emergency-button,
+  .health-card {
+    animation: none;
+  }
+  
+  .health-card {
+    transition: none;
+  }
+}
