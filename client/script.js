@@ -1,9 +1,11 @@
 const SERVER = "http://localhost:5000"; // change to your Render URL after deploy
+
 // -----------------------------
 // 🌐 UI TRANSLATION STRINGS
 // -----------------------------
 const uiText = {
   en: {
+    languageLabel: "Language:",
     title: "Government Public Health Portal",
     subtitle: "Official health information, alerts, and chatbot assistance",
     chatbot: "AI Chatbot",
@@ -20,6 +22,7 @@ const uiText = {
     learn: "Learn: Diseases, Vaccines, Prevention",
   },
   hi: {
+    languageLabel: "भाषा:",
     title: "सरकारी सार्वजनिक स्वास्थ्य पोर्टल",
     subtitle: "आधिकारिक स्वास्थ्य जानकारी, अलर्ट और चैटबॉट सहायता",
     chatbot: "एआई चैटबॉट",
@@ -36,6 +39,7 @@ const uiText = {
     learn: "जानें: बीमारियाँ, टीकाकरण, रोकथाम",
   },
   or: {
+    languageLabel: "ଭାଷା:",
     title: "ସରକାରୀ ସାର୍ବଜନିକ ସ୍ୱାସ୍ଥ୍ୟ ପୋର୍ଟାଲ",
     subtitle: "ଆଧିକାରିକ ସ୍ୱାସ୍ଥ୍ୟ ସୂଚନା, ସତର୍କତା ଏବଂ ଚାଟବୋଟ ସହାୟତା",
     chatbot: "ଏଆଇ ଚାଟବୋଟ୍",
@@ -52,85 +56,68 @@ const uiText = {
     learn: "ଶିଖନ୍ତୁ: ରୋଗ, ଟୀକା, ପ୍ରତିରୋଧ",
   },
 };
+
 // -----------------------------
 // 🈶 APPLY UI TRANSLATION
 // -----------------------------
 function applyTranslations(lang) {
   const t = uiText[lang] || uiText.en;
-
-  document.querySelector("h1").textContent = t.title;
+  document.querySelector("label.text-sm").textContent = t.languageLabel;
+  document.querySelector("header h1").textContent = t.title;
   document.querySelector("header p").textContent = t.subtitle;
 
-  // Chatbot Section
-  document.querySelector("section h2").textContent = t.chatbot;
+  const chatSection = document.querySelector("main section:nth-of-type(1)");
+  chatSection.querySelector("h2").textContent = t.chatbot;
   document.getElementById("msg").placeholder = t.placeholder;
-  document.querySelector("#form button[type='submit']").textContent = t.send;
+  chatSection.querySelector("button.bg-blue-600").textContent = t.send;
   document.getElementById("voiceBtn").textContent = t.voice;
-  document.querySelector("section p.text-xs").textContent = t.tip;
+  chatSection.querySelector("p.text-xs").textContent = t.tip;
 
-  // Alerts
-  document.querySelector("aside h2").textContent = t.alerts;
+  const alertsSection = document.querySelector("aside section:nth-of-type(1)");
+  alertsSection.querySelector("h2").textContent = t.alerts;
   document.getElementById("refreshAlerts").textContent = t.refresh;
 
-  // Subscribe
-  document.querySelector("aside section:nth-child(2) h2").textContent = t.subscribeTitle;
+  const subSection = document.querySelector("aside section:nth-of-type(2)");
+  subSection.querySelector("h2").textContent = t.subscribeTitle;
   document.getElementById("phone").placeholder = t.phone;
   document.getElementById("name").placeholder = t.name;
-  document.querySelector("#subForm button").textContent = t.subscribe;
+  subSection.querySelector("button.bg-green-600").textContent = t.subscribe;
 
-  // Learn section
-  document.querySelector("main section:last-child h2").textContent = t.learn;
+  const learnSection = document.querySelector("main section.lg\\:col-span-3");
+  learnSection.querySelector("h2").textContent = t.learn;
 }
 
-// -----------------------------
-// 🌐 LANGUAGE HANDLING
-// -----------------------------
 // -----------------------------
 // 🌐 LANGUAGE HANDLING (Auto Detect + Save)
 // -----------------------------
 const langSel = document.getElementById("lang");
-
-// Check for saved preference, else detect browser language
 let savedLang = localStorage.getItem("preferredLang");
 if (!savedLang) {
   const browserLang = navigator.language.slice(0, 2).toLowerCase();
-  if (["hi", "or", "en"].includes(browserLang)) {
-    savedLang = browserLang;
-  } else {
-    savedLang = "en"; // fallback if unsupported
-  }
-
-  // Show small info popup (optional UX improvement)
-  alert(`Language auto-detected as ${savedLang.toUpperCase()}. You can change it anytime.`);
-
+  savedLang = ["hi", "or", "en"].includes(browserLang) ? browserLang : "en";
+  alert(`Language auto-detected as ${savedLang.toUpperCase()}.`);
   localStorage.setItem("preferredLang", savedLang);
 }
-
-// Set dropdown to current language
+if (savedLang === "auto") {
+  const browserLang = navigator.language.slice(0, 2).toLowerCase();
+  savedLang = ["hi", "or", "en"].includes(browserLang) ? browserLang : "en";
+}
 langSel.value = savedLang;
-
-// Apply translations immediately
 applyTranslations(savedLang);
-
-// Helper function
 function getLang() {
   return localStorage.getItem("preferredLang") || "en";
 }
-
-// Update when language changes
 langSel.addEventListener("change", (e) => {
   localStorage.setItem("preferredLang", e.target.value);
   applyTranslations(e.target.value);
 });
 
-
 // -----------------------------
-// 💬 CHATBOT SECTION
+// 💬 CHATBOT SECTION (manual play audio)
 // -----------------------------
 const chatBox = document.getElementById("chat");
 const form = document.getElementById("form");
 const input = document.getElementById("msg");
-const voiceBtn = document.getElementById("voiceBtn");
 
 function addBubble(role, text) {
   const wrap = document.createElement("div");
@@ -144,6 +131,28 @@ function addBubble(role, text) {
   wrap.appendChild(bubble);
   chatBox.appendChild(wrap);
   chatBox.scrollTop = chatBox.scrollHeight;
+
+  // 🔊 add "Play Audio" button for bot replies
+  if (role === "bot") {
+    const btn = document.createElement("button");
+    btn.textContent = "🔊 Play Audio";
+    btn.className = "block mt-1 text-xs text-blue-600 underline";
+    btn.onclick = async () => {
+      try {
+        const res = await fetch(
+          `${SERVER}/api/tts?text=${encodeURIComponent(text)}&lang=${getLang()}`
+        );
+        const data = await res.json();
+        if (data.audioUrl) {
+          const audio = new Audio(data.audioUrl);
+          audio.play();
+        } else alert("⚠️ Unable to play audio.");
+      } catch {
+        alert("Network error while generating audio.");
+      }
+    };
+    bubble.appendChild(btn);
+  }
 }
 
 form.addEventListener("submit", async (e) => {
@@ -152,7 +161,6 @@ form.addEventListener("submit", async (e) => {
   if (!msg) return;
   addBubble("user", msg);
   input.value = "";
-
   try {
     const res = await fetch(`${SERVER}/api/chat?lang=${getLang()}`, {
       method: "POST",
@@ -162,7 +170,6 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json();
     const text = data.reply || data.error || "No answer found.";
     addBubble("bot", text);
-    speak(text, getLang());
   } catch {
     addBubble("bot", "Network error.");
   }
@@ -172,6 +179,7 @@ form.addEventListener("submit", async (e) => {
 // 🎙️ VOICE INPUT (Speech → Text)
 // -----------------------------
 let rec;
+const voiceBtn = document.getElementById("voiceBtn");
 if ("webkitSpeechRecognition" in window) {
   rec = new webkitSpeechRecognition();
   rec.lang = `${getLang()}-IN`;
@@ -183,25 +191,14 @@ if ("webkitSpeechRecognition" in window) {
     form.requestSubmit();
   };
 }
-
 voiceBtn.addEventListener("click", () => {
-  if (!rec) return alert("Speech recognition not supported in this browser.");
+  if (!rec) return alert("Speech recognition not supported.");
   rec.lang =
     getLang() === "hi" ? "hi-IN" : getLang() === "or" ? "or-IN" : "en-IN";
   rec.start();
   voiceBtn.textContent = "🎧 Listening...";
-  rec.onend = () => (voiceBtn.textContent = "🎙️ Voice");
+  rec.onend = () => (voiceBtn.textContent = uiText[getLang()].voice);
 });
-
-// -----------------------------
-// 🔊 TEXT → SPEECH OUTPUT
-// -----------------------------
-function speak(text, lang) {
-  if (!("speechSynthesis" in window)) return;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang === "hi" ? "hi-IN" : lang === "or" ? "or-IN" : "en-IN";
-  speechSynthesis.speak(u);
-}
 
 // -----------------------------
 // 🚨 ALERTS SECTION
@@ -209,7 +206,6 @@ function speak(text, lang) {
 const alertsEl = document.getElementById("alerts");
 document.getElementById("refreshAlerts").addEventListener("click", loadAlerts);
 loadAlerts();
-
 async function loadAlerts() {
   alertsEl.innerHTML = "Loading...";
   try {
@@ -231,7 +227,6 @@ async function loadAlerts() {
 // -----------------------------
 const subForm = document.getElementById("subForm");
 const subResult = document.getElementById("subResult");
-
 subForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const phone = document.getElementById("phone").value.trim();
@@ -241,7 +236,6 @@ subForm.addEventListener("submit", async (e) => {
   const channels = [];
   if (chWhats) channels.push("whatsapp");
   if (chSms) channels.push("sms");
-
   subResult.textContent = "Saving...";
   try {
     const res = await fetch(`${SERVER}/api/subscribe`, {
@@ -268,14 +262,11 @@ subForm.addEventListener("submit", async (e) => {
 // -----------------------------
 const categorySelect = document.getElementById("categorySelect");
 const learnList = document.getElementById("learnList");
-
 loadCategories();
 loadEntries();
-
 categorySelect.addEventListener("change", () =>
   loadEntries(categorySelect.value)
 );
-
 async function loadCategories() {
   try {
     const res = await fetch(`${SERVER}/api/learn/categories?lang=${getLang()}`);
@@ -289,13 +280,11 @@ async function loadCategories() {
     categorySelect.innerHTML = `<option>Error loading categories</option>`;
   }
 }
-
 async function loadEntries(categoryId = "") {
   try {
     const url = new URL(`${SERVER}/api/learn/entries`);
     if (categoryId) url.searchParams.set("categoryId", categoryId);
     url.searchParams.set("lang", getLang());
-
     const res = await fetch(url);
     const items = await res.json();
     learnList.innerHTML = items

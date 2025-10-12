@@ -1,7 +1,6 @@
 const express = require("express");
 const { pool } = require("../db");
-const { translateText } = require("../utils/translate");
-const { detectLanguage } = require("../utils/detectLang"); // 🧠 new
+const { translateText, detectLanguage } = require("../utils/translate"); // ✅ unified import
 const router = express.Router();
 
 /**
@@ -16,15 +15,17 @@ router.post("/", async (req, res) => {
     message = message.trim();
     console.log(`🧠 [Chatbot Query] "${message}" (${lang})`);
 
-    // Step 1️⃣ — Detect language automatically if set to "auto"
+    // Step 1️⃣ — Detect language automatically if "auto"
     if (lang === "auto" || !lang) {
-      lang = detectLanguage(message);
+      lang = await detectLanguage(message); // ✅ await it!
       console.log(`🌍 Auto-detected language: ${lang}`);
     }
-    lang = lang.slice(0, 2).toLowerCase(); // Normalize (e.g., "hi-IN" → "hi")
 
-    // Step 2️⃣ — Translate user input to English for DB search
-    const englishInput = lang !== "en" ? await translateText(message, "en") : message;
+    lang = lang.slice(0, 2).toLowerCase(); // Normalize e.g. hi-IN → hi
+
+    // Step 2️⃣ — Translate user input into English for database search
+    const englishInput =
+      lang !== "en" ? await translateText(message, "en") : message;
     const cleaned = englishInput.toLowerCase();
 
     // Step 3️⃣ — Search FAQs first
@@ -85,13 +86,13 @@ router.post("/", async (req, res) => {
       }
     }
 
-    // Step 6️⃣ — Default fallback
+    // Step 6️⃣ — Default fallback if nothing found
     if (!reply) {
       reply =
         "Sorry, I couldn’t find information about that topic. Please try another query.";
     }
 
-    // Step 7️⃣ — Translate the reply back to user’s language
+    // Step 7️⃣ — Translate the reply back into the user’s language
     const translatedReply =
       lang !== "en" ? await translateText(reply, lang) : reply;
 

@@ -1,88 +1,150 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <title>Government Public Health Chatbot</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50">
-  <header class="bg-white border-b">
-    <div class="max-w-6xl mx-auto p-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-blue-700"></div>
-        <div>
-          <h1 class="text-xl font-semibold">Government Public Health Portal</h1>
-          <p class="text-xs text-gray-600">Official health information, alerts, and chatbot assistance</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <label class="text-sm">Language:</label>
-        <select id="lang" class="border rounded px-2 py-1">
-  <option value="auto">🌐 Auto Detect</option>
-  <option value="en">English</option>
-  <option value="hi">Hindi</option>
-  <option value="or">Odia</option>
-</select>
+  <head>
+    <meta charset="utf-8" />
+    <title>Government Public Health Chatbot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
 
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-6xl mx-auto p-4 grid lg:grid-cols-3 gap-6">
-    <!-- Chat card -->
-    <section class="lg:col-span-2 bg-white border rounded-xl p-4">
-      <h2 class="text-lg font-semibold mb-2">AI Chatbot</h2>
-      <div id="chat" class="border rounded p-3 h-80 overflow-y-auto space-y-3 bg-gray-50"></div>
-      <form id="form" class="mt-3 flex gap-2">
-        <input id="msg" class="flex-1 border rounded px-3 py-2" placeholder="Ask about symptoms, vaccines, prevention..." required />
-        <button class="bg-blue-600 text-white px-4 py-2 rounded">Send</button>
-        <button type="button" id="voiceBtn" class="px-3 py-2 border rounded">🎙️ Voice</button>
-      </form>
-      <p class="text-xs text-gray-500 mt-2">Tip: Click 🎙️ to speak your query; bot can speak the answer back.</p>
-    </section>
-
-    <!-- Alerts & Subscribe -->
-    <aside class="space-y-6">
-      <section class="bg-white border rounded-xl p-4">
-        <div class="flex items-center justify-between mb-2">
-          <h2 class="text-lg font-semibold">Active Alerts</h2>
-          <button id="refreshAlerts" class="text-sm underline">Refresh</button>
-        </div>
-        <ul id="alerts" class="list-disc pl-5 text-sm text-gray-800 space-y-1"></ul>
-      </section>
-
-      <section class="bg-white border rounded-xl p-4">
-        <h2 class="text-lg font-semibold mb-2">Subscribe for Updates</h2>
-        <form id="subForm" class="space-y-2">
-          <input id="phone" class="w-full border rounded px-3 py-2" placeholder="Phone (e.g., 9876543210)" required>
-          <input id="name" class="w-full border rounded px-3 py-2" placeholder="Name (optional)">
-          <div class="flex gap-3 items-center">
-            <label class="text-sm"><input type="checkbox" id="chWhats" checked> WhatsApp</label>
-            <label class="text-sm"><input type="checkbox" id="chSms"> SMS</label>
+  <body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white border-b">
+      <div class="max-w-6xl mx-auto p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-blue-700"></div>
+          <div>
+            <h1 class="text-xl font-semibold">
+              Government Public Health Portal
+            </h1>
+            <p class="text-xs text-gray-600">
+              Official health information, alerts, and chatbot assistance
+            </p>
           </div>
-          <button class="bg-green-600 text-white px-4 py-2 rounded">Subscribe</button>
-        </form>
-        <p id="subResult" class="text-xs mt-2 text-gray-600"></p>
-      </section>
-    </aside>
+        </div>
 
-    <!-- Learn -->
-    <section class="lg:col-span-3 bg-white border rounded-xl p-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">Learn: Diseases, Vaccines, Prevention</h2>
-        <select id="categorySelect" class="border rounded px-2 py-1"></select>
+        <!-- 🌐 Language Selector -->
+        <div class="flex items-center gap-3">
+          <label class="text-sm">Language:</label>
+          <select id="lang" class="border rounded px-2 py-1">
+            <option value="auto">🌐 Auto Detect</option>
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="or">Odia</option>
+          </select>
+        </div>
       </div>
-      <div id="learnList" class="mt-3 grid md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-    </section>
-  </main>
+    </header>
 
-  <footer class="mt-10 border-t">
-    <div class="max-w-6xl mx-auto p-4 text-xs text-gray-500">
-      © Government of Odisha – Electronics & IT Department • Public Health Portal (Demo)
-    </div>
-  </footer>
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto p-4 grid lg:grid-cols-3 gap-6">
+      <!-- 💬 Chat Card -->
+      <section class="lg:col-span-2 bg-white border rounded-xl p-4">
+        <h2 class="text-lg font-semibold mb-2">AI Chatbot</h2>
 
-  <script src="./script.js"></script>
-</body>
+        <!-- Chat Window -->
+        <div
+          id="chat"
+          class="border rounded p-3 h-80 overflow-y-auto space-y-3 bg-gray-50"
+        ></div>
+
+        <!-- Chat Form -->
+        <form id="form" class="mt-3 flex gap-2">
+          <input
+            id="msg"
+            class="flex-1 border rounded px-3 py-2"
+            placeholder="Ask about symptoms, vaccines, prevention..."
+            required
+          />
+          <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">
+            Send
+          </button>
+          <button
+            type="button"
+            id="voiceBtn"
+            class="px-3 py-2 border rounded"
+          >
+            🎙️ Voice
+          </button>
+        </form>
+
+        <!-- Tip -->
+        <p class="text-xs text-gray-500 mt-2">
+          Tip: Click 🎙️ to speak your query; bot can speak the answer back.
+        </p>
+      </section>
+
+      <!-- 🚨 Alerts & Subscribe -->
+      <aside class="space-y-6">
+        <!-- Alerts -->
+        <section class="bg-white border rounded-xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-lg font-semibold">Active Alerts</h2>
+            <button id="refreshAlerts" class="text-sm underline">Refresh</button>
+          </div>
+          <ul
+            id="alerts"
+            class="list-disc pl-5 text-sm text-gray-800 space-y-1"
+          ></ul>
+        </section>
+
+        <!-- Subscribe -->
+        <section class="bg-white border rounded-xl p-4">
+          <h2 class="text-lg font-semibold mb-2">Subscribe for Updates</h2>
+          <form id="subForm" class="space-y-2">
+            <input
+              id="phone"
+              class="w-full border rounded px-3 py-2"
+              placeholder="Phone (e.g., 9876543210)"
+              required
+            />
+            <input
+              id="name"
+              class="w-full border rounded px-3 py-2"
+              placeholder="Name (optional)"
+            />
+            <div class="flex gap-3 items-center">
+              <label class="text-sm"
+                ><input type="checkbox" id="chWhats" checked />
+                WhatsApp</label
+              >
+              <label class="text-sm"
+                ><input type="checkbox" id="chSms" />
+                SMS</label
+              >
+            </div>
+            <button class="bg-green-600 text-white px-4 py-2 rounded">
+              Subscribe
+            </button>
+          </form>
+          <p id="subResult" class="text-xs mt-2 text-gray-600"></p>
+        </section>
+      </aside>
+
+      <!-- 📘 Learn Section -->
+      <section class="lg:col-span-3 bg-white border rounded-xl p-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">
+            Learn: Diseases, Vaccines, Prevention
+          </h2>
+          <select id="categorySelect" class="border rounded px-2 py-1"></select>
+        </div>
+        <div
+          id="learnList"
+          class="mt-3 grid md:grid-cols-2 lg:grid-cols-3 gap-3"
+        ></div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-10 border-t">
+      <div class="max-w-6xl mx-auto p-4 text-xs text-gray-500">
+        © Government of Odisha – Electronics & IT Department • Public Health
+        Portal (Demo)
+      </div>
+    </footer>
+
+    <!-- ✅ Updated Script -->
+    <script src="./script.js"></script>
+  </body>
 </html>
