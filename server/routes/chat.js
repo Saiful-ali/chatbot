@@ -11,41 +11,78 @@ router.post("/", async (req, res) => {
     const { message, lang = "en" } = req.body || {};
     if (!message) return res.status(400).json({ error: "Message is required" });
 
-    // Search in faqs by language + question match
-    const q = await pool.query(
-      `
-      SELECT answer
+    // Normalize input for better search
+    const cleaned = message.trim().toLowerCase();
+
+    // Try full-text + fuzzy + fallback matches
+    const query = `
+      SELECT answer, question,
+        similarity(question, $1) AS score
       FROM faqs
       WHERE (language = $2 OR $2 IS NULL)
-        AND (LOWER(question) LIKE LOWER($1))
-      LIMIT 1
-      `,
-      [`%${message}%`, lang || null]
-    );
+        AND (
+          tsv @@ plainto_tsquery('english', unaccent($1))
+          OR question % $1
+          OR answer % $1
+        )
+      ORDER BY score DESC
+      LIMIT 1;
+    `;
 
-    if (q.rows.length) {
-      return res.json({ reply: q.rows[0].answer });
+    const result = await pool.query(query, [cleaned, lang]);
+
+    if (result.rows.length > 0) {
+      const { answer, question } = result.rows[0];
+      return res.json({ reply: answer, matched_question: question });
     }
 
-    // Fallback: search in answer text too (broader)
-    const q2 = await pool.query(
+    // Fallback to health_entries if FAQ not found
+    const entries = await pool.query(
       `
-      SELECT answer
-      FROM faqs
-      WHERE (language = $2 OR $2 IS NULL)
-        AND (LOWER(question) LIKE LOWER($1) OR LOWER(answer) LIKE LOWER($1))
-      LIMIT 1
+      SELECT title, content
+      FROM health_entries
+      WHERE tsv @@ plainto_tsquery('english', unaccent($1))
+         OR title % $1
+         OR content % $1
+      ORDER BY similarity(title, $1) DESC
+      LIMIT 1;
       `,
-      [`%${message}%`, lang || null]
+      [cleaned]
     );
 
-    if (q2.rows.length) {
-      return res.json({ reply: q2.rows[0].answer });
+    if (entries.rows.length > 0) {
+      return res.json({ reply: entries.rows[0].content, matched_title: entries.rows[0].title });
     }
 
-    return res.json({ reply: "Sorry, I don’t have an answer for that yet." });
+    // Fallback 2: alerts
+    const alerts = await pool.query(
+      `
+      SELECT title, description
+      FROM health_alerts
+      WHERE is_active = true
+        AND (
+          tsv @@ plainto_tsquery('english', unaccent($1))
+          OR title % $1
+          OR description % $1
+        )
+      LIMIT 1;
+      `,
+      [cleaned]
+    );
+
+    if (alerts.rows.length > 0) {
+      return res.json({
+        reply: `🚨 ${alerts.rows[0].title}: ${alerts.rows[0].description}`,
+      });
+    }
+
+    // No match found
+    return res.json({
+      reply: "Sorry, I couldn’t find information about that topic. Please try another query.",
+    });
+
   } catch (err) {
-    console.error("chat error:", err);
+    console.error("Chat error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

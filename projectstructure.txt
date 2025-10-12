@@ -1,0 +1,20 @@
+chatbot/
+├─ client/                         # Beautiful gov-style UI (Tailwind, voice I/O)
+│  ├─ index.html
+│  └─ script.js
+└─ server/                         # Node.js + Express + PostgreSQL
+   ├─ package.json
+   ├─ .env.example
+   ├─ index.js
+   ├─ db.js
+   ├─ routes/
+   │  ├─ chat.js                  # /api/chat (web)
+   │  ├─ learn.js                 # /api/learn (health entries & categories)
+   │  ├─ alerts.js                # /api/alerts
+   │  ├─ vaccines.js              # /api/vaccines (from health_entries)
+   │  ├─ subscribe.js             # /api/subscribe (add users, channels)
+   │  ├─ twilioWebhook.js         # /twilio/whatsapp (inbound WhatsApp)
+   ├─ jobs/
+   │  └─ updater.js               # polls govt sources, notifies users (Twilio)
+   └─ sql/
+      └─ extend_schema.sql        # new tables: sources, updates, subscriptions

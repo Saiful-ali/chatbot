@@ -2,19 +2,13 @@ const express = require("express");
 const { pool } = require("../db");
 const router = express.Router();
 
-/**
- * GET /api/alerts
- */
 router.get("/", async (_req, res) => {
   try {
     const result = await pool.query(
-      `
-      SELECT title, description, alert_type, priority, is_active, expires_at, created_at
-      FROM health_alerts
-      WHERE is_active = true
-        AND (expires_at IS NULL OR expires_at >= NOW())
-      ORDER BY priority DESC, created_at DESC
-      `
+      `SELECT title, description, alert_type, priority, is_active, expires_at, created_at
+       FROM health_alerts
+       WHERE is_active = true AND (expires_at IS NULL OR expires_at >= NOW())
+       ORDER BY priority DESC, created_at DESC`
     );
     res.json(result.rows);
   } catch (err) {
