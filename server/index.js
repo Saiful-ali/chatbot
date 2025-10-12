@@ -16,10 +16,10 @@ const alertsRoutes = require("./routes/alerts");
 const vaccinesRoutes = require("./routes/vaccines");
 const learnRoutes = require("./routes/learn");
 const subscribeRoutes = require("./routes/subscribe");
-const adminRoutes = require("./routes/admin"); // ✅ Admin dashboard route
-const twilioWebhook = require("./routes/twilioWebhook");
+const adminRoutes = require("./routes/admin"); // ✅ Admin dashboard
+const twilioWebhook = require("./routes/twilioWebhook"); // ✅ Twilio webhook route
 
-const startUpdater = require("./jobs/updater"); // Optional RSS/JSON auto-update job
+const startUpdater = require("./jobs/updater"); // Optional background job
 
 // Initialize Express
 const app = express();
@@ -47,17 +47,17 @@ app.get("/", (_req, res) => {
 // ---------------------
 // 🌐 Web API Routes
 // ---------------------
-app.use("/api/chat", chatRoutes);          // Intelligent chatbot (FAQ, fuzzy + multilingual)
-app.use("/api/alerts", alertsRoutes);      // Health alerts (disease, environmental)
-app.use("/api/vaccines", vaccinesRoutes);  // Vaccine & immunization info
+app.use("/api/chat", chatRoutes);          // Intelligent chatbot (FAQ + multilingual)
+app.use("/api/alerts", alertsRoutes);      // Health alerts (disease, disaster)
+app.use("/api/vaccines", vaccinesRoutes);  // Vaccine information
 app.use("/api/learn", learnRoutes);        // Educational health content
 app.use("/api/subscribe", subscribeRoutes);// User subscriptions
-app.use("/api/admin", adminRoutes);        // ✅ Admin dashboard (add/view government updates)
+app.use("/api/admin", adminRoutes);        // Admin dashboard
 
 // ---------------------
-// 💬 WhatsApp Webhook
+// 💬 WhatsApp Webhook (Twilio)
 // ---------------------
-app.post("/twilio/whatsapp", twilioWebhook); // Handles incoming WhatsApp messages via Twilio
+app.use("/twilio/whatsapp", twilioWebhook); // ✅ Fixed mounting — this enables Twilio route
 
 // ---------------------
 // ⚙️ Start Server
@@ -67,10 +67,9 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   await test(); // Test PostgreSQL connection
 
-  console.log(`✅ PostgreSQL connected`);
+  console.log("✅ PostgreSQL connected");
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 
-  // Start RSS/JSON auto-updater only if enabled in .env
   if (process.env.UPDATER_ENABLED === "true") {
     console.log("🔄 Auto-updater enabled...");
     startUpdater();
