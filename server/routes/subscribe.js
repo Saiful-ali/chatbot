@@ -22,14 +22,17 @@ router.post("/", async (req, res) => {
     const userId = user.rows[0].id;
 
     // subscribe channels
-    for (const ch of channels) {
-      await pool.query(
-        `INSERT INTO user_subscriptions (user_id, channel, is_active)
-         VALUES ($1, $2, true)
-         ON CONFLICT (user_id, channel) DO UPDATE SET is_active = true`,
-        [userId, ch]
-      );
-    }
+    // subscribe channels
+for (const ch of channels) {
+  await pool.query(
+    `INSERT INTO user_subscriptions (user_id, phone_number, channel, is_active)
+     VALUES ($1, $2, $3, true)
+     ON CONFLICT (user_id, channel)
+     DO UPDATE SET is_active = true, phone_number = EXCLUDED.phone_number`,
+    [userId, phone_number, ch]
+  );
+}
+
 
     res.json({ ok: true, user_id: userId, channels });
   } catch (err) {
