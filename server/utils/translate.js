@@ -1,45 +1,28 @@
 // utils/translate.js
-
-// ✅ Universal import fix — works in all environments (CommonJS & ESM)
-let translator;
-try {
-  translator = require("@vitalets/google-translate-api");
-  if (translator.default) translator = translator.default;
-} catch (err) {
-  console.error("❌ Failed to load google-translate-api:", err);
-}
+const translate = require("google-translate-api-x");
 
 /**
  * Translate plain text into another language.
- * @param {string} text - Text to translate.
- * @param {string} toLang - Target language code (e.g. 'hi', 'or', 'en').
  */
 async function translateText(text, toLang = "en") {
   if (!text || toLang === "en" || toLang === "auto") return text || "";
-
   try {
-    if (!translator) throw new Error("translator not initialized");
-    const res = await translator(text, { to: toLang });
+    const res = await translate(text, { to: toLang });
     return res.text;
   } catch (e) {
     console.warn("⚠️ translateText error:", e.message);
-    return text; // graceful fallback
+    return text;
   }
 }
 
 /**
  * Detect language of given text.
- * @param {string} text
- * @returns {Promise<string>} language code like 'en', 'hi', 'or'
  */
 async function detectLanguage(text) {
+  if (!text) return "en";
   try {
-    if (!text) return "en";
-    if (!translator) throw new Error("translator not initialized");
-
-    const res = await translator(text, { to: "en" });
-    // Correct access to detected language
-    return res?.from?.language?.iso || "en";
+    const res = await translate(text, { to: "en" });
+    return res.from?.language?.iso || "en";
   } catch (e) {
     console.warn("⚠️ detectLanguage error:", e.message);
     return "en";
@@ -47,7 +30,7 @@ async function detectLanguage(text) {
 }
 
 /**
- * Translate multiple fields in an object (row) to given language.
+ * Translate multiple fields in an object.
  */
 async function translateFields(row, fields, toLang) {
   const out = { ...row };

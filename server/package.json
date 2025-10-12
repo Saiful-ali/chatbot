@@ -8,12 +8,12 @@
     "dev:whatsapp": "node start-whatsapp.js"
   },
   "dependencies": {
-    "@vitalets/google-translate-api": "^9.2.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "franc-min": "^6.2.0",
+    "google-translate-api-x": "^10.7.2",
     "gtts": "^0.2.1",
     "langs": "^2.0.0",
     "morgan": "^1.10.0",
