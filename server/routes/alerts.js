@@ -8,16 +8,17 @@ const router = express.Router();
 router.get("/", async (_req, res) => {
   try {
     const result = await pool.query(
-      `SELECT disease, district, severity, message, starts_at, ends_at, source
-       FROM alerts
-       WHERE (starts_at IS NULL OR starts_at <= NOW())
-         AND (ends_at IS NULL OR ends_at >= NOW())
-       ORDER BY severity DESC, starts_at DESC NULLS LAST
-       LIMIT 50`
+      `
+      SELECT title, description, alert_type, priority, is_active, expires_at, created_at
+      FROM health_alerts
+      WHERE is_active = true
+        AND (expires_at IS NULL OR expires_at >= NOW())
+      ORDER BY priority DESC, created_at DESC
+      `
     );
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    console.error("alerts error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

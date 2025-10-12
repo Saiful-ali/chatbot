@@ -4,20 +4,23 @@ const router = express.Router();
 
 /**
  * GET /api/vaccines?lang=en
+ * Note: current schema stores title/content in plain text; translations JSONB exists but is optional.
+ * We ignore translations for now; you can expand later to read from *_translations by lang.
  */
-router.get("/", async (req, res) => {
+router.get("/", async (_req, res) => {
   try {
-    const lang = req.query.lang || "en";
     const result = await pool.query(
-      `SELECT disease, vaccine, age_group, schedule, COALESCE(notes,'') AS notes
-       FROM vaccines
-       WHERE lang = $1
-       ORDER BY disease, age_group`,
-      [lang]
+      `
+      SELECT he.title, he.content, he.risk_level
+      FROM health_entries he
+      JOIN health_categories hc ON hc.id = he.category_id
+      WHERE hc.type = 'vaccine'
+      ORDER BY he.title
+      `
     );
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    console.error("vaccines error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

@@ -1,4 +1,5 @@
-const SERVER_BASE_URL = "http://localhost:5000"; // change after deploy
+// Change this after deploy (e.g., https://your-service.onrender.com)
+const SERVER_BASE_URL = "http://localhost:5000";
 
 const chatBox = document.getElementById("chat");
 const form = document.getElementById("form");
@@ -37,29 +38,41 @@ form.addEventListener("submit", async (e) => {
     });
     const data = await res.json();
     addBubble("bot", data.reply || data.error || "No answer found.");
-  } catch (err) {
+  } catch {
     addBubble("bot", "Network error. Please try again.");
   }
 });
 
 btnVaccines.addEventListener("click", async () => {
-  extra.textContent = "Loading vaccination schedule...";
-  const res = await fetch(`${SERVER_BASE_URL}/api/vaccines?lang=${langSel.value}`);
-  const data = await res.json();
-  if (!Array.isArray(data) || !data.length) {
-    extra.textContent = "No vaccination data found.";
-    return;
+  extra.textContent = "Loading vaccination info...";
+  try {
+    const res = await fetch(`${SERVER_BASE_URL}/api/vaccines?lang=${langSel.value}`);
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) {
+      extra.textContent = "No vaccination info found.";
+      return;
+    }
+    extra.textContent = data
+      .map(v => `• ${v.title}${v.risk_level ? ` (${v.risk_level})` : ""}: ${v.content}`)
+      .join("\n");
+  } catch {
+    extra.textContent = "Network error.";
   }
-  extra.textContent = data.map(v => `• ${v.disease} – ${v.vaccine} – ${v.age_group} – ${v.schedule}`).join("\n");
 });
 
 btnAlerts.addEventListener("click", async () => {
   extra.textContent = "Loading alerts...";
-  const res = await fetch(`${SERVER_BASE_URL}/api/alerts`);
-  const data = await res.json();
-  if (!Array.isArray(data) || !data.length) {
-    extra.textContent = "No active alerts.";
-    return;
+  try {
+    const res = await fetch(`${SERVER_BASE_URL}/api/alerts`);
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) {
+      extra.textContent = "No active alerts.";
+      return;
+    }
+    extra.textContent = data
+      .map(a => `• [${a.priority}] ${a.title}: ${a.description}`)
+      .join("\n");
+  } catch {
+    extra.textContent = "Network error.";
   }
-  extra.textContent = data.map(a => `• [${a.severity}] ${a.disease} in ${a.district}: ${a.message}`).join("\n");
 });
