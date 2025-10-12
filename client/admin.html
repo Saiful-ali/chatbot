@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>🩺 Health Updates Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-2xl font-semibold mb-4">🩺 Government Health Updates (Admin Panel)</h1>
+
+    <form id="updateForm" class="bg-white shadow p-4 rounded space-y-3 border">
+      <div>
+        <label class="block font-medium">Title</label>
+        <input id="title" class="border w-full px-3 py-2 rounded" required placeholder="Enter health update title" />
+      </div>
+
+      <div>
+        <label class="block font-medium">Description</label>
+        <textarea id="description" class="border w-full px-3 py-2 rounded" rows="3" required placeholder="Describe the update..."></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-medium">Priority</label>
+          <select id="priority" class="border w-full px-3 py-2 rounded">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-medium">Language</label>
+          <select id="lang" class="border w-full px-3 py-2 rounded">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="or">Odia</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700">
+        ➕ Add Update
+      </button>
+    </form>
+
+    <div id="status" class="mt-4 text-sm"></div>
+
+    <h2 class="text-lg font-semibold mt-8 mb-3">📋 Existing Updates</h2>
+    <ul id="updatesList" class="bg-white rounded shadow border divide-y"></ul>
+  </div>
+
+  <script src="./admin.js"></script>
+</body>
+</html>
