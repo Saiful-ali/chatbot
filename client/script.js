@@ -1,10 +1,135 @@
 const SERVER = "http://localhost:5000"; // change to your Render URL after deploy
+// -----------------------------
+// 🌐 UI TRANSLATION STRINGS
+// -----------------------------
+const uiText = {
+  en: {
+    title: "Government Public Health Portal",
+    subtitle: "Official health information, alerts, and chatbot assistance",
+    chatbot: "AI Chatbot",
+    placeholder: "Ask about symptoms, vaccines, prevention...",
+    send: "Send",
+    voice: "🎙️ Voice",
+    tip: "Tip: Click 🎙️ to speak your query; bot can speak the answer back.",
+    alerts: "Active Alerts",
+    refresh: "Refresh",
+    subscribeTitle: "Subscribe for Updates",
+    phone: "Phone (e.g., 9876543210)",
+    name: "Name (optional)",
+    subscribe: "Subscribe",
+    learn: "Learn: Diseases, Vaccines, Prevention",
+  },
+  hi: {
+    title: "सरकारी सार्वजनिक स्वास्थ्य पोर्टल",
+    subtitle: "आधिकारिक स्वास्थ्य जानकारी, अलर्ट और चैटबॉट सहायता",
+    chatbot: "एआई चैटबॉट",
+    placeholder: "लक्षण, वैक्सीन, रोकथाम आदि पूछें...",
+    send: "भेजें",
+    voice: "🎙️ आवाज़",
+    tip: "सुझाव: 🎙️ पर क्लिक करें और अपनी क्वेरी बोलें; बॉट जवाब बोलकर देगा।",
+    alerts: "सक्रिय अलर्ट",
+    refresh: "रीफ़्रेश करें",
+    subscribeTitle: "अपडेट के लिए सदस्यता लें",
+    phone: "फ़ोन (जैसे 9876543210)",
+    name: "नाम (वैकल्पिक)",
+    subscribe: "सदस्यता लें",
+    learn: "जानें: बीमारियाँ, टीकाकरण, रोकथाम",
+  },
+  or: {
+    title: "ସରକାରୀ ସାର୍ବଜନିକ ସ୍ୱାସ୍ଥ୍ୟ ପୋର୍ଟାଲ",
+    subtitle: "ଆଧିକାରିକ ସ୍ୱାସ୍ଥ୍ୟ ସୂଚନା, ସତର୍କତା ଏବଂ ଚାଟବୋଟ ସହାୟତା",
+    chatbot: "ଏଆଇ ଚାଟବୋଟ୍",
+    placeholder: "ଲକ୍ଷଣ, ଟୀକା, ପ୍ରତିରୋଧ ବିଷୟରେ ପଚାରନ୍ତୁ...",
+    send: "ପଠାନ୍ତୁ",
+    voice: "🎙️ ଶବ୍ଦ",
+    tip: "ସୁପାରିଶ: 🎙️ ଉପରେ କ୍ଲିକ୍ କରନ୍ତୁ ଏବଂ ପ୍ରଶ୍ନ କହନ୍ତୁ; ବୋଟ୍ ଉତ୍ତର ଶବ୍ଦରେ ଦେବ।",
+    alerts: "ସକ୍ରିୟ ସତର୍କତା",
+    refresh: "ପୁନଃଲୋଡ୍ କରନ୍ତୁ",
+    subscribeTitle: "ଅଦ୍ୟତନ ପାଇଁ ସଦସ୍ୟତା ନିଅନ୍ତୁ",
+    phone: "ଫୋନ (ଉଦାହରଣ: 9876543210)",
+    name: "ନାମ (ଇଚ୍ଛାନୁସାରେ)",
+    subscribe: "ସଦସ୍ୟତା ନିଅନ୍ତୁ",
+    learn: "ଶିଖନ୍ତୁ: ରୋଗ, ଟୀକା, ପ୍ରତିରୋଧ",
+  },
+};
+// -----------------------------
+// 🈶 APPLY UI TRANSLATION
+// -----------------------------
+function applyTranslations(lang) {
+  const t = uiText[lang] || uiText.en;
 
-// --- Chat UI ---
+  document.querySelector("h1").textContent = t.title;
+  document.querySelector("header p").textContent = t.subtitle;
+
+  // Chatbot Section
+  document.querySelector("section h2").textContent = t.chatbot;
+  document.getElementById("msg").placeholder = t.placeholder;
+  document.querySelector("#form button[type='submit']").textContent = t.send;
+  document.getElementById("voiceBtn").textContent = t.voice;
+  document.querySelector("section p.text-xs").textContent = t.tip;
+
+  // Alerts
+  document.querySelector("aside h2").textContent = t.alerts;
+  document.getElementById("refreshAlerts").textContent = t.refresh;
+
+  // Subscribe
+  document.querySelector("aside section:nth-child(2) h2").textContent = t.subscribeTitle;
+  document.getElementById("phone").placeholder = t.phone;
+  document.getElementById("name").placeholder = t.name;
+  document.querySelector("#subForm button").textContent = t.subscribe;
+
+  // Learn section
+  document.querySelector("main section:last-child h2").textContent = t.learn;
+}
+
+// -----------------------------
+// 🌐 LANGUAGE HANDLING
+// -----------------------------
+// -----------------------------
+// 🌐 LANGUAGE HANDLING (Auto Detect + Save)
+// -----------------------------
+const langSel = document.getElementById("lang");
+
+// Check for saved preference, else detect browser language
+let savedLang = localStorage.getItem("preferredLang");
+if (!savedLang) {
+  const browserLang = navigator.language.slice(0, 2).toLowerCase();
+  if (["hi", "or", "en"].includes(browserLang)) {
+    savedLang = browserLang;
+  } else {
+    savedLang = "en"; // fallback if unsupported
+  }
+
+  // Show small info popup (optional UX improvement)
+  alert(`Language auto-detected as ${savedLang.toUpperCase()}. You can change it anytime.`);
+
+  localStorage.setItem("preferredLang", savedLang);
+}
+
+// Set dropdown to current language
+langSel.value = savedLang;
+
+// Apply translations immediately
+applyTranslations(savedLang);
+
+// Helper function
+function getLang() {
+  return localStorage.getItem("preferredLang") || "en";
+}
+
+// Update when language changes
+langSel.addEventListener("change", (e) => {
+  localStorage.setItem("preferredLang", e.target.value);
+  applyTranslations(e.target.value);
+});
+
+
+// -----------------------------
+// 💬 CHATBOT SECTION
+// -----------------------------
 const chatBox = document.getElementById("chat");
 const form = document.getElementById("form");
 const input = document.getElementById("msg");
-const langSel = document.getElementById("lang");
 const voiceBtn = document.getElementById("voiceBtn");
 
 function addBubble(role, text) {
@@ -29,25 +154,27 @@ form.addEventListener("submit", async (e) => {
   input.value = "";
 
   try {
-    const res = await fetch(`${SERVER}/api/chat`, {
+    const res = await fetch(`${SERVER}/api/chat?lang=${getLang()}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: msg, lang: langSel.value })
+      body: JSON.stringify({ message: msg }),
     });
     const data = await res.json();
     const text = data.reply || data.error || "No answer found.";
     addBubble("bot", text);
-    speak(text, langSel.value); // voice out
+    speak(text, getLang());
   } catch {
     addBubble("bot", "Network error.");
   }
 });
 
-// --- Voice input/output using Web Speech API ---
+// -----------------------------
+// 🎙️ VOICE INPUT (Speech → Text)
+// -----------------------------
 let rec;
 if ("webkitSpeechRecognition" in window) {
   rec = new webkitSpeechRecognition();
-  rec.lang = "en-IN"; // updated dynamically
+  rec.lang = `${getLang()}-IN`;
   rec.continuous = false;
   rec.interimResults = false;
   rec.onresult = (e) => {
@@ -59,28 +186,37 @@ if ("webkitSpeechRecognition" in window) {
 
 voiceBtn.addEventListener("click", () => {
   if (!rec) return alert("Speech recognition not supported in this browser.");
-  rec.lang = langSel.value === "hi" ? "hi-IN" : (langSel.value === "or" ? "or-IN" : "en-IN");
+  rec.lang =
+    getLang() === "hi" ? "hi-IN" : getLang() === "or" ? "or-IN" : "en-IN";
   rec.start();
+  voiceBtn.textContent = "🎧 Listening...";
+  rec.onend = () => (voiceBtn.textContent = "🎙️ Voice");
 });
 
+// -----------------------------
+// 🔊 TEXT → SPEECH OUTPUT
+// -----------------------------
 function speak(text, lang) {
   if (!("speechSynthesis" in window)) return;
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang === "hi" ? "hi-IN" : (lang === "or" ? "or-IN" : "en-IN");
-  window.speechSynthesis.speak(u);
+  u.lang = lang === "hi" ? "hi-IN" : lang === "or" ? "or-IN" : "en-IN";
+  speechSynthesis.speak(u);
 }
 
-// --- Alerts ---
+// -----------------------------
+// 🚨 ALERTS SECTION
+// -----------------------------
 const alertsEl = document.getElementById("alerts");
 document.getElementById("refreshAlerts").addEventListener("click", loadAlerts);
 loadAlerts();
+
 async function loadAlerts() {
   alertsEl.innerHTML = "Loading...";
   try {
-    const res = await fetch(`${SERVER}/api/alerts`);
+    const res = await fetch(`${SERVER}/api/alerts?lang=${getLang()}`);
     const arr = await res.json();
     alertsEl.innerHTML = "";
-    arr.forEach(a => {
+    arr.forEach((a) => {
       const li = document.createElement("li");
       li.textContent = `[${a.priority}] ${a.title}: ${a.description}`;
       alertsEl.appendChild(li);
@@ -90,9 +226,12 @@ async function loadAlerts() {
   }
 }
 
-// --- Subscribe ---
+// -----------------------------
+// 📲 SUBSCRIBE SECTION
+// -----------------------------
 const subForm = document.getElementById("subForm");
 const subResult = document.getElementById("subResult");
+
 subForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const phone = document.getElementById("phone").value.trim();
@@ -102,45 +241,79 @@ subForm.addEventListener("submit", async (e) => {
   const channels = [];
   if (chWhats) channels.push("whatsapp");
   if (chSms) channels.push("sms");
+
   subResult.textContent = "Saving...";
   try {
     const res = await fetch(`${SERVER}/api/subscribe`, {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ phone_number: phone, name, preferred_language: langSel.value, channels })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone_number: phone,
+        name,
+        preferred_language: getLang(),
+        channels,
+      }),
     });
     const data = await res.json();
-    subResult.textContent = data.ok ? "Subscribed successfully!" : (data.error || "Failed");
+    subResult.textContent = data.ok
+      ? "✅ Subscribed successfully!"
+      : data.error || "Failed.";
   } catch {
     subResult.textContent = "Network error.";
   }
 });
 
-// --- Learn section ---
+// -----------------------------
+// 📘 LEARN SECTION
+// -----------------------------
 const categorySelect = document.getElementById("categorySelect");
 const learnList = document.getElementById("learnList");
-loadCategories(); loadEntries();
 
-categorySelect.addEventListener("change", () => loadEntries(categorySelect.value));
+loadCategories();
+loadEntries();
+
+categorySelect.addEventListener("change", () =>
+  loadEntries(categorySelect.value)
+);
 
 async function loadCategories() {
-  const res = await fetch(`${SERVER}/api/learn/categories`);
-  const cats = await res.json();
-  categorySelect.innerHTML = `<option value="">All</option>` + 
-    cats.map(c => `<option value="${c.id}">${c.name} (${c.type})</option>`).join("");
+  try {
+    const res = await fetch(`${SERVER}/api/learn/categories?lang=${getLang()}`);
+    const cats = await res.json();
+    categorySelect.innerHTML =
+      `<option value="">All</option>` +
+      cats
+        .map((c) => `<option value="${c.id}">${c.name} (${c.type})</option>`)
+        .join("");
+  } catch {
+    categorySelect.innerHTML = `<option>Error loading categories</option>`;
+  }
 }
 
-async function loadEntries(categoryId="") {
-  const url = new URL(`${SERVER}/api/learn/entries`);
-  if (categoryId) url.searchParams.set("categoryId", categoryId);
-  const res = await fetch(url);
-  const items = await res.json();
-  learnList.innerHTML = items.map(i => `
-    <div class="border rounded p-3 bg-gray-50">
-      <div class="text-sm text-gray-500">${i.category || ""}</div>
-      <div class="font-semibold">${i.title}</div>
-      <div class="text-sm mt-1">${i.content}</div>
-      ${i.risk_level ? `<div class="mt-1 text-xs">Risk: ${i.risk_level}</div>` : ""}
-    </div>
-  `).join("");
+async function loadEntries(categoryId = "") {
+  try {
+    const url = new URL(`${SERVER}/api/learn/entries`);
+    if (categoryId) url.searchParams.set("categoryId", categoryId);
+    url.searchParams.set("lang", getLang());
+
+    const res = await fetch(url);
+    const items = await res.json();
+    learnList.innerHTML = items
+      .map(
+        (i) => `
+      <div class="border rounded p-3 bg-gray-50">
+        <div class="text-sm text-gray-500">${i.category || ""}</div>
+        <div class="font-semibold">${i.title}</div>
+        <div class="text-sm mt-1">${i.content}</div>
+        ${
+          i.risk_level
+            ? `<div class="mt-1 text-xs">Risk: ${i.risk_level}</div>`
+            : ""
+        }
+      </div>`
+      )
+      .join("");
+  } catch {
+    learnList.innerHTML = `<div class="text-sm text-red-600">Failed to load content.</div>`;
+  }
 }

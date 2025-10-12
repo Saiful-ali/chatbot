@@ -1,9 +1,12 @@
 const express = require("express");
 const { pool } = require("../db");
+const { translateText } = require("../utils/translate"); // ✅ helper for translation
 const router = express.Router();
 
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
   try {
+    const userLang = req.query.lang || "en"; // language from query or default English
+
     const result = await pool.query(
       `SELECT he.title, he.content, he.risk_level
        FROM health_entries he
@@ -11,7 +14,21 @@ router.get("/", async (_req, res) => {
        WHERE hc.type = 'vaccine'
        ORDER BY he.title`
     );
-    res.json(result.rows);
+
+    let vaccines = result.rows;
+
+    // Only translate if language is not English
+    if (userLang !== "en") {
+      vaccines = await Promise.all(
+        vaccines.map(async (v) => ({
+          ...v,
+          title: await translateText(v.title, userLang),
+          content: await translateText(v.content, userLang),
+        }))
+      );
+    }
+
+    res.json(vaccines);
   } catch (err) {
     console.error("vaccines error:", err);
     res.status(500).json({ error: "Server error" });
