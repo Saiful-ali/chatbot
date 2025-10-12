@@ -119,9 +119,10 @@ const chatBox = document.getElementById("chat");
 const form = document.getElementById("form");
 const input = document.getElementById("msg");
 
-function addBubble(role, text) {
+async function addBubble(role, text, lang = getLang()) {
   const wrap = document.createElement("div");
   wrap.className = role === "user" ? "text-right" : "text-left";
+
   const bubble = document.createElement("div");
   bubble.className =
     (role === "user"
@@ -129,31 +130,37 @@ function addBubble(role, text) {
       : "bg-gray-200 text-gray-900") + " inline-block px-3 py-2 rounded";
   bubble.textContent = text;
   wrap.appendChild(bubble);
-  chatBox.appendChild(wrap);
-  chatBox.scrollTop = chatBox.scrollHeight;
 
-  // 🔊 add "Play Audio" button for bot replies
+  // 🎧 Add Play button only for bot replies
   if (role === "bot") {
-    const btn = document.createElement("button");
-    btn.textContent = "🔊 Play Audio";
-    btn.className = "block mt-1 text-xs text-blue-600 underline";
-    btn.onclick = async () => {
+    const playBtn = document.createElement("button");
+    playBtn.textContent = "🔊";
+    playBtn.className = "ml-2 text-blue-600 hover:text-blue-800";
+    playBtn.title = "Play audio reply";
+
+    playBtn.addEventListener("click", async () => {
       try {
         const res = await fetch(
-          `${SERVER}/api/tts?text=${encodeURIComponent(text)}&lang=${getLang()}`
+          `${SERVER}/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`
         );
         const data = await res.json();
-        if (data.audioUrl) {
-          const audio = new Audio(data.audioUrl);
-          audio.play();
-        } else alert("⚠️ Unable to play audio.");
-      } catch {
-        alert("Network error while generating audio.");
+
+        const audio = new Audio(data.url);
+        audio.play();
+      } catch (err) {
+        console.error("Audio play error:", err);
+        alert("Unable to play audio.");
       }
-    };
-    bubble.appendChild(btn);
+    });
+
+    wrap.appendChild(playBtn);
   }
+
+  chatBox.appendChild(wrap);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
+
+
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();

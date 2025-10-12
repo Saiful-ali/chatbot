@@ -1,38 +1,47 @@
+// routes/tts.js
 const express = require("express");
-const gTTS = require("gtts");
 const fs = require("fs");
 const path = require("path");
+const gTTS = require("gtts");
 
 const router = express.Router();
 const tmpDir = path.join(__dirname, "../tmp");
+
+// Ensure tmp directory exists
 if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
 
 /**
- * GET /api/tts?text=Hello&lang=hi
- * Generates a temporary MP3 file and returns its public URL
+ * GET /api/tts?text=Hello&lang=en
+ * Returns: { url: "http://localhost:5000/static/reply_123.mp3" }
  */
 router.get("/", async (req, res) => {
   try {
-    const text = req.query.text;
+    const text = req.query.text || "";
     const lang = req.query.lang || "en";
 
-    if (!text) return res.status(400).json({ error: "Missing text parameter" });
+    if (!text.trim()) {
+      return res.status(400).json({ error: "Text required" });
+    }
 
-    const filePath = path.join(tmpDir, `tts_${Date.now()}.mp3`);
+    // Create file name and path
+    const filename = `reply_${Date.now()}.mp3`;
+    const filePath = path.join(tmpDir, filename);
+
+    // Generate TTS audio
     const gtts = new gTTS(text, lang);
     gtts.save(filePath, (err) => {
       if (err) {
-        console.error("🎧 gTTS error:", err);
-        return res.status(500).json({ error: "TTS generation failed" });
+        console.error("TTS generation error:", err);
+        return res.status(500).json({ error: "Failed to generate TTS" });
       }
 
-      const publicUrl = `${process.env.SERVER_PUBLIC_URL}/static/${path.basename(filePath)}`;
-      res.json({ audioUrl: publicUrl });
+      const fileUrl = `${process.env.SERVER_PUBLIC_URL || "http://localhost:5000"}/static/${filename}`;
+      res.json({ url: fileUrl });
     });
   } catch (err) {
-    console.error("❌ /api/tts error:", err);
+    console.error("TTS route error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-module.exports = router;
+module.exports = router; // ✅ Correct export

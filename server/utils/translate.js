@@ -1,28 +1,39 @@
 // utils/translate.js
-const translate = require("google-translate-api-x");
+const { translate } = require("@deep-translate/core");
+const google = require("@deep-translate/google");
+const { franc } = require("franc-min");
+const langs = require("langs");
 
 /**
- * Translate plain text into another language.
+ * 🌐 Offline-safe translation using Deep Translate
+ * (Automatically falls back to input text if translation fails)
  */
 async function translateText(text, toLang = "en") {
   if (!text || toLang === "en" || toLang === "auto") return text || "";
   try {
-    const res = await translate(text, { to: toLang });
-    return res.text;
+    const res = await translate(google, text, "auto", toLang);
+    return res.data.translation || text;
   } catch (e) {
     console.warn("⚠️ translateText error:", e.message);
-    return text;
+    return text; // fallback if translation fails
   }
 }
 
 /**
- * Detect language of given text.
+ * 🧠 Detect language of text using franc-min (offline)
  */
 async function detectLanguage(text) {
-  if (!text) return "en";
   try {
-    const res = await translate(text, { to: "en" });
-    return res.from?.language?.iso || "en";
+    if (!text || text.length < 2) return "en";
+
+    const lang3 = franc(text);
+    if (!lang3 || lang3 === "und") return "en";
+
+    const langInfo = langs.where("3", lang3);
+    if (!langInfo) return "en";
+
+    const lang2 = langInfo["1"];
+    return ["en", "hi", "or"].includes(lang2) ? lang2 : "en";
   } catch (e) {
     console.warn("⚠️ detectLanguage error:", e.message);
     return "en";
@@ -30,7 +41,7 @@ async function detectLanguage(text) {
 }
 
 /**
- * Translate multiple fields in an object.
+ * 🌐 Translate multiple fields in an object
  */
 async function translateFields(row, fields, toLang) {
   const out = { ...row };
