@@ -1,0 +1,373 @@
+/* ------------------------------------- */
+/* 🌐 Government Public Health Portal UI */
+/* ------------------------------------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+body {
+  background: #f4f6fb;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+/* HEADER */
+header {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: white;
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+header p {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+header label {
+  font-size: 0.9rem;
+  margin-right: 5px;
+}
+
+header select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  background: white;
+  color: #1f2937;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+header select:hover {
+  background: #e0e7ff;
+}
+
+/* MAIN GRID */
+.main-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  padding: 25px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* SECTIONS & CARDS */
+section,
+aside section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+section:hover,
+aside section:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 1.2rem;
+  color: #1e40af;
+  margin-bottom: 10px;
+}
+
+/* CHAT SECTION */
+#chat {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 15px;
+  height: 350px;
+  overflow-y: auto;
+}
+
+#chat::-webkit-scrollbar {
+  width: 6px;
+}
+#chat::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 10px;
+}
+
+/* CHAT BUBBLES */
+.user {
+  text-align: right;
+  margin-bottom: 8px;
+}
+.user .bubble {
+  display: inline-block;
+  background: #2563eb;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 16px 16px 0 16px;
+  animation: fadeInRight 0.3s ease-in-out;
+}
+
+.bot {
+  text-align: left;
+  margin-bottom: 8px;
+}
+.bot .bubble {
+  display: inline-block;
+  background: #e5e7eb;
+  color: #111827;
+  padding: 10px 14px;
+  border-radius: 16px 16px 16px 0;
+  animation: fadeInLeft 0.3s ease-in-out;
+}
+
+/* CHAT FORM */
+form {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+#msg {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+#msg:focus {
+  border-color: #2563eb;
+}
+
+/* BUTTONS */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+.bg-blue-600 {
+  background: #2563eb;
+  color: white;
+}
+.bg-blue-600:hover {
+  background: #1e40af;
+}
+
+.bg-green-600 {
+  background: #16a34a;
+  color: white;
+}
+.bg-green-600:hover {
+  background: #15803d;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* ALERTS */
+#alerts li {
+  background: #f3f4f6;
+  border-left: 4px solid #2563eb;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+
+#alerts li:hover {
+  background: #e0e7ff;
+}
+
+/* ============================= */
+/* 📘 FULL-WIDTH LEARN SECTION   */
+/* ============================= */
+.learn-section {
+  width: 100%;
+  background: white;
+  margin: 40px auto;
+  padding: 30px 60px;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+  max-width: 1500px;
+}
+
+/* Header */
+.learn-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.learn-header h2 {
+  color: #1e40af;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+/* Category Buttons */
+.category-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.category-buttons button {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.category-buttons button:hover {
+  background: #e0e7ff;
+  color: #1e40af;
+  border-color: #2563eb;
+}
+
+.category-buttons button.active {
+  background: #2563eb;
+  color: white;
+  border-color: #1d4ed8;
+  box-shadow: 0 3px 6px rgba(37, 99, 235, 0.3);
+}
+
+/* Learn Cards Grid */
+#learnList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+
+/* Individual Card */
+#learnList div {
+  background: linear-gradient(145deg, #ffffff, #f9fafc);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  transition: 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  animation: fadeInUp 0.4s ease;
+}
+
+#learnList div:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.15);
+}
+
+/* Card Elements */
+#learnList div .category {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e40af;
+  background: #e0e7ff;
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+#learnList div .title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+#learnList div .content {
+  color: #4b5563;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+#learnList div .risk {
+  font-size: 0.85rem;
+  color: white;
+  border-radius: 20px;
+  padding: 4px 10px;
+  width: fit-content;
+  text-transform: capitalize;
+}
+#learnList div .risk[data-level="high"] { background: #dc2626; }
+#learnList div .risk[data-level="medium"] { background: #f59e0b; }
+#learnList div .risk[data-level="low"] { background: #16a34a; }
+
+/* FOOTER */
+footer {
+  background: #1e3a8a;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  font-size: 0.85rem;
+  margin-top: 30px;
+  box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 900px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .learn-section {
+    padding: 20px;
+  }
+
+  .category-buttons {
+    justify-content: center;
+  }
+}
+
+/* ANIMATIONS */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}

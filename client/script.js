@@ -139,19 +139,20 @@ async function addBubble(role, text, lang = getLang()) {
     playBtn.title = "Play audio reply";
 
     playBtn.addEventListener("click", async () => {
-      try {
-        const res = await fetch(
-          `${SERVER}/api/tts?text=${encodeURIComponent(text)}&lang=${lang}`
-        );
-        const data = await res.json();
+  try {
+    playBtn.textContent = "🎧 Playing...";
+    const audio = new Audio(
+      `${SERVER}/api/tts?text=${encodeURIComponent(text)}&lang=${lang}&stream=true`
+    );
+    audio.play();
+    audio.onended = () => (playBtn.textContent = "🔊");
+  } catch (err) {
+    playBtn.textContent = "🔊";
+    console.error("Audio play error:", err);
+    alert("Unable to play audio.");
+  }
+});
 
-        const audio = new Audio(data.url);
-        audio.play();
-      } catch (err) {
-        console.error("Audio play error:", err);
-        alert("Unable to play audio.");
-      }
-    });
 
     wrap.appendChild(playBtn);
   }
@@ -295,20 +296,23 @@ async function loadEntries(categoryId = "") {
     const res = await fetch(url);
     const items = await res.json();
     learnList.innerHTML = items
-      .map(
-        (i) => `
-      <div class="border rounded p-3 bg-gray-50">
-        <div class="text-sm text-gray-500">${i.category || ""}</div>
-        <div class="font-semibold">${i.title}</div>
-        <div class="text-sm mt-1">${i.content}</div>
+  .map(
+    (i) => `
+      <div>
+        <div class="category">${i.category || "General"}</div>
+        <div class="title">${i.title}</div>
+        <div class="content">${i.content}</div>
         ${
           i.risk_level
-            ? `<div class="mt-1 text-xs">Risk: ${i.risk_level}</div>`
+            ? `<div class="risk" data-level="${i.risk_level.toLowerCase()}">
+                ${i.risk_level} Risk
+              </div>`
             : ""
         }
       </div>`
-      )
-      .join("");
+  )
+  .join("");
+
   } catch {
     learnList.innerHTML = `<div class="text-sm text-red-600">Failed to load content.</div>`;
   }

@@ -1,150 +1,228 @@
-<!doctype html>
+<!-- ========================================
+     public/index.html - Main Portal
+     ======================================== -->
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Government Public Health Chatbot</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-
-  <body class="bg-gray-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Government Public Health Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="container mx-auto px-4 py-6">
     <!-- Header -->
-    <header class="bg-white border-b">
-      <div class="max-w-6xl mx-auto p-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-blue-700"></div>
-          <div>
-            <h1 class="text-xl font-semibold">
-              Government Public Health Portal
-            </h1>
-            <p class="text-xs text-gray-600">
-              Official health information, alerts, and chatbot assistance
-            </p>
-          </div>
+    <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg shadow-lg p-6 mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h1 class="text-3xl font-bold">Government Public Health Portal</h1>
+          <p class="text-blue-100">Official health information, alerts, and chatbot assistance</p>
         </div>
-
-        <!-- 🌐 Language Selector -->
-        <div class="flex items-center gap-3">
-          <label class="text-sm">Language:</label>
-          <select id="lang" class="border rounded px-2 py-1">
-            <option value="auto">🌐 Auto Detect</option>
+        <div>
+          <label class="text-sm mr-2">Language:</label>
+          <select id="lang" class="px-3 py-1 rounded bg-white text-gray-800">
             <option value="en">English</option>
-            <option value="hi">Hindi</option>
-            <option value="or">Odia</option>
+            <option value="hi">हिन्दी</option>
+            <option value="or">ଓଡ଼ିଆ</option>
           </select>
         </div>
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto p-4 grid lg:grid-cols-3 gap-6">
-      <!-- 💬 Chat Card -->
-      <section class="lg:col-span-2 bg-white border rounded-xl p-4">
-        <h2 class="text-lg font-semibold mb-2">AI Chatbot</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Chatbot Section -->
+      <main class="lg:col-span-2 space-y-6">
+        <section class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-semibold mb-4">🤖 AI Chatbot</h2>
+          <div id="chat" class="bg-gray-50 h-96 overflow-y-auto p-4 rounded mb-4 space-y-2"></div>
+          <form id="form" class="flex gap-2">
+            <input type="text" id="msg" placeholder="Ask about symptoms, vaccines, prevention..." class="flex-1 px-4 py-2 border rounded-lg">
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Send</button>
+            <button type="button" id="voiceBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">🎙️</button>
+          </form>
+          <p class="text-xs text-gray-500 mt-2">Tip: Click 🎙️ to speak your query</p>
+        </section>
 
-        <!-- Chat Window -->
-        <div
-          id="chat"
-          class="border rounded p-3 h-80 overflow-y-auto space-y-3 bg-gray-50"
-        ></div>
+        <!-- Learn Section -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-semibold mb-4">📚 Learn: Diseases, Vaccines, Prevention</h2>
+          <select id="categorySelect" class="w-full mb-4 px-4 py-2 border rounded-lg"></select>
+          <div id="learnList" class="space-y-4"></div>
+        </section>
+      </main>
 
-        <!-- Chat Form -->
-        <form id="form" class="mt-3 flex gap-2">
-          <input
-            id="msg"
-            class="flex-1 border rounded px-3 py-2"
-            placeholder="Ask about symptoms, vaccines, prevention..."
-            required
-          />
-          <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">
-            Send
-          </button>
-          <button
-            type="button"
-            id="voiceBtn"
-            class="px-3 py-2 border rounded"
-          >
-            🎙️ Voice
-          </button>
-        </form>
-
-        <!-- Tip -->
-        <p class="text-xs text-gray-500 mt-2">
-          Tip: Click 🎙️ to speak your query; bot can speak the answer back.
-        </p>
-      </section>
-
-      <!-- 🚨 Alerts & Subscribe -->
+      <!-- Sidebar -->
       <aside class="space-y-6">
         <!-- Alerts -->
-        <section class="bg-white border rounded-xl p-4">
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="text-lg font-semibold">Active Alerts</h2>
-            <button id="refreshAlerts" class="text-sm underline">Refresh</button>
-          </div>
-          <ul
-            id="alerts"
-            class="list-disc pl-5 text-sm text-gray-800 space-y-1"
-          ></ul>
+        <section class="bg-red-50 border-l-4 border-red-600 rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-semibold text-red-800 mb-4">🚨 Active Alerts</h2>
+          <button id="refreshAlerts" class="text-sm text-red-600 hover:underline mb-2">Refresh</button>
+          <ul id="alerts" class="space-y-2 text-sm"></ul>
         </section>
 
         <!-- Subscribe -->
-        <section class="bg-white border rounded-xl p-4">
-          <h2 class="text-lg font-semibold mb-2">Subscribe for Updates</h2>
-          <form id="subForm" class="space-y-2">
-            <input
-              id="phone"
-              class="w-full border rounded px-3 py-2"
-              placeholder="Phone (e.g., 9876543210)"
-              required
-            />
-            <input
-              id="name"
-              class="w-full border rounded px-3 py-2"
-              placeholder="Name (optional)"
-            />
-            <div class="flex gap-3 items-center">
-              <label class="text-sm"
-                ><input type="checkbox" id="chWhats" checked />
-                WhatsApp</label
-              >
-              <label class="text-sm"
-                ><input type="checkbox" id="chSms" />
-                SMS</label
-              >
-            </div>
-            <button class="bg-green-600 text-white px-4 py-2 rounded">
-              Subscribe
-            </button>
+        <section class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-semibold mb-4">📲 Subscribe for Updates</h2>
+          <form id="subForm" class="space-y-3">
+            <input type="tel" id="phone" placeholder="Phone (e.g., 9876543210)" class="w-full px-3 py-2 border rounded">
+            <input type="text" id="name" placeholder="Name (optional)" class="w-full px-3 py-2 border rounded">
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="chWhats" checked> WhatsApp
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="chSms"> SMS
+            </label>
+            <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Subscribe</button>
           </form>
-          <p id="subResult" class="text-xs mt-2 text-gray-600"></p>
+          <p id="subResult" class="text-sm mt-2"></p>
         </section>
       </aside>
+    </div>
+  </div>
 
-      <!-- 📘 Learn Section -->
-      <section class="lg:col-span-3 bg-white border rounded-xl p-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold">
-            Learn: Diseases, Vaccines, Prevention
-          </h2>
-          <select id="categorySelect" class="border rounded px-2 py-1"></select>
-        </div>
-        <div
-          id="learnList"
-          class="mt-3 grid md:grid-cols-2 lg:grid-cols-3 gap-3"
-        ></div>
-      </section>
-    </main>
+  <script>
+    const SERVER = "http://localhost:5000";
+    const langSel = document.getElementById("lang");
+    const chatBox = document.getElementById("chat");
+    const form = document.getElementById("form");
+    const input = document.getElementById("msg");
+    const voiceBtn = document.getElementById("voiceBtn");
 
-    <!-- Footer -->
-    <footer class="mt-10 border-t">
-      <div class="max-w-6xl mx-auto p-4 text-xs text-gray-500">
-        © Government of Odisha – Electronics & IT Department • Public Health
-        Portal (Demo)
-      </div>
-    </footer>
+    let savedLang = localStorage.getItem("preferredLang") || "en";
+    langSel.value = savedLang;
 
-    <!-- ✅ Updated Script -->
-    <script src="./script.js"></script>
-  </body>
+    function getLang() {
+      return localStorage.getItem("preferredLang") || "en";
+    }
+
+    langSel.addEventListener("change", (e) => {
+      localStorage.setItem("preferredLang", e.target.value);
+    });
+
+    function addBubble(role, text) {
+      const wrap = document.createElement("div");
+      wrap.className = role === "user" ? "text-right" : "text-left";
+      const bubble = document.createElement("div");
+      bubble.className = (role === "user" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900") + " inline-block px-3 py-2 rounded";
+      bubble.textContent = text;
+      wrap.appendChild(bubble);
+
+      if (role === "bot") {
+        const playBtn = document.createElement("button");
+        playBtn.textContent = "🔊";
+        playBtn.className = "ml-2 text-blue-600 hover:text-blue-800";
+        playBtn.addEventListener("click", async () => {
+          playBtn.textContent = "🎧 Playing...";
+          const audio = new Audio(`${SERVER}/api/tts?text=${encodeURIComponent(text)}&lang=${getLang()}&stream=true`);
+          audio.play();
+          audio.onended = () => (playBtn.textContent = "🔊");
+        });
+        wrap.appendChild(playBtn);
+      }
+
+      chatBox.appendChild(wrap);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = input.value.trim();
+      if (!msg) return;
+      addBubble("user", msg);
+      input.value = "";
+      try {
+        const res = await fetch(`${SERVER}/api/chat?lang=${getLang()}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg }),
+        });
+        const data = await res.json();
+        addBubble("bot", data.reply || "No answer found.");
+      } catch {
+        addBubble("bot", "Network error.");
+      }
+    });
+
+    let rec;
+    if ("webkitSpeechRecognition" in window) {
+      rec = new webkitSpeechRecognition();
+      rec.continuous = false;
+      rec.onresult = (e) => {
+        input.value = e.results[0][0].transcript;
+        form.requestSubmit();
+      };
+    }
+
+    voiceBtn.addEventListener("click", () => {
+      if (!rec) return alert("Speech not supported.");
+      rec.lang = getLang() === "hi" ? "hi-IN" : getLang() === "or" ? "or-IN" : "en-IN";
+      rec.start();
+      voiceBtn.textContent = "🎧 Listening...";
+      rec.onend = () => (voiceBtn.textContent = "🎙️");
+    });
+
+    const alertsEl = document.getElementById("alerts");
+    document.getElementById("refreshAlerts").addEventListener("click", loadAlerts);
+
+    async function loadAlerts() {
+      alertsEl.innerHTML = "Loading...";
+      try {
+        const res = await fetch(`${SERVER}/api/alerts?lang=${getLang()}`);
+        const arr = await res.json();
+        alertsEl.innerHTML = arr.map((a) => `<li><strong>${a.title}</strong>: ${a.description}</li>`).join("");
+      } catch {
+        alertsEl.innerHTML = "Failed to load.";
+      }
+    }
+    loadAlerts();
+
+    const subForm = document.getElementById("subForm");
+    subForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const phone = document.getElementById("phone").value.trim();
+      const name = document.getElementById("name").value.trim();
+      const channels = [];
+      if (document.getElementById("chWhats").checked) channels.push("whatsapp");
+      if (document.getElementById("chSms").checked) channels.push("sms");
+
+      try {
+        const res = await fetch(`${SERVER}/api/subscribe`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone_number: phone, name, preferred_language: getLang(), channels }),
+        });
+        const data = await res.json();
+        document.getElementById("subResult").textContent = data.ok ? "✅ Subscribed!" : "❌ Failed";
+      } catch {
+        document.getElementById("subResult").textContent = "Network error";
+      }
+    });
+
+    const categorySelect = document.getElementById("categorySelect");
+    const learnList = document.getElementById("learnList");
+
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${SERVER}/api/learn/categories?lang=${getLang()}`);
+        const cats = await res.json();
+        categorySelect.innerHTML = `<option value="">All</option>` + cats.map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
+      } catch {}
+    }
+
+    async function loadEntries(categoryId = "") {
+      try {
+        const url = new URL(`${SERVER}/api/learn/entries`);
+        if (categoryId) url.searchParams.set("categoryId", categoryId);
+        url.searchParams.set("lang", getLang());
+        const res = await fetch(url);
+        const items = await res.json();
+        learnList.innerHTML = items.map((i) => `<div class="border-l-4 border-blue-500 pl-4"><strong>${i.title}</strong><p class="text-sm text-gray-600">${i.content}</p></div>`).join("");
+      } catch {}
+    }
+
+    loadCategories();
+    loadEntries();
+    categorySelect.addEventListener("change", () => loadEntries(categorySelect.value));
+  </script>
+</body>
 </html>

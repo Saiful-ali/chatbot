@@ -6,30 +6,37 @@ const client = twilio(
 );
 
 /**
- * Sends a WhatsApp message to a specific number
+ * ✅ Sends a WhatsApp message (text or media)
  * @param {string} to - Recipient number (e.g., +919045141958)
  * @param {string} content - Message text or media URL
- * @param {boolean} isMedia - true if sending media (audio, image, etc.)
+ * @param {boolean} isMedia - true for media message
  */
 async function sendWhatsApp(to, content, isMedia = false) {
   try {
+    // ✅ Clean and format recipient
+    const formattedTo = to
+      .toString()
+      .replace(/\s+/g, "")           // remove spaces
+      .replace(/^(\+91)?/, "+91")    // ensure country code (India by default)
+      .replace(/^whatsapp:/, "");    // remove duplicate prefix if exists
+
     const msgData = {
-      from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
-      to: `whatsapp:${to.replace("whatsapp:", "")}`, // normalize
+      from: process.env.TWILIO_WHATSAPP_NUMBER, // ✅ already includes 'whatsapp:'
+      to: `whatsapp:${formattedTo}`,
     };
 
     if (isMedia) {
-      // 🎧 Send media message (e.g., MP3, image, PDF, etc.)
       msgData.mediaUrl = [content];
     } else {
-      // 💬 Send plain text message
       msgData.body = content;
     }
 
     const msg = await client.messages.create(msgData);
-    console.log(`✅ WhatsApp ${isMedia ? "media" : "text"} sent to ${to} | SID: ${msg.sid}`);
+    console.log(`✅ WhatsApp ${isMedia ? "media" : "text"} sent to ${formattedTo} | SID: ${msg.sid}`);
+    return msg.sid;
   } catch (err) {
     console.error(`❌ Failed to send WhatsApp to ${to}:`, err.message);
+    throw err;
   }
 }
 

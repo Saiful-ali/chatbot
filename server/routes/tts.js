@@ -1,47 +1,47 @@
+// ========================================
 // routes/tts.js
+// ========================================
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const gTTS = require("gtts");
-
 const router = express.Router();
+
 const tmpDir = path.join(__dirname, "../tmp");
+if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
 
-// Ensure tmp directory exists
-if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+async function generateVoice(text, lang = "en") {
+  const filename = `reply_${lang}_${Date.now()}.mp3`;
+  const filePath = path.join(tmpDir, filename);
 
-/**
- * GET /api/tts?text=Hello&lang=en
- * Returns: { url: "http://localhost:5000/static/reply_123.mp3" }
- */
+  return new Promise((resolve, reject) => {
+    const gtts = new gTTS(text, lang);
+    gtts.save(filePath, (err) => (err ? reject(err) : resolve(filePath)));
+  });
+}
+
 router.get("/", async (req, res) => {
   try {
-    const text = req.query.text || "";
-    const lang = req.query.lang || "en";
+    const text = (req.query.text || "").trim();
+    const lang = (req.query.lang || "en").slice(0, 2);
+    const stream = req.query.stream === "true";
 
-    if (!text.trim()) {
-      return res.status(400).json({ error: "Text required" });
-    }
+    if (!text) return res.status(400).json({ error: "Text required" });
 
-    // Create file name and path
-    const filename = `reply_${Date.now()}.mp3`;
-    const filePath = path.join(tmpDir, filename);
+    const filePath = await generateVoice(text, lang);
+    const fileUrl = `${process.env.SERVER_PUBLIC_URL || "http://localhost:5000"}/static/${path.basename(filePath)}`;
 
-    // Generate TTS audio
-    const gtts = new gTTS(text, lang);
-    gtts.save(filePath, (err) => {
-      if (err) {
-        console.error("TTS generation error:", err);
-        return res.status(500).json({ error: "Failed to generate TTS" });
-      }
-
-      const fileUrl = `${process.env.SERVER_PUBLIC_URL || "http://localhost:5000"}/static/${filename}`;
+    if (stream) {
+      res.setHeader("Content-Type", "audio/mpeg");
+      const readStream = fs.createReadStream(filePath);
+      readStream.pipe(res);
+      readStream.on("close", () => fs.unlink(filePath, () => {}));
+    } else {
       res.json({ url: fileUrl });
-    });
+    }
   } catch (err) {
-    console.error("TTS route error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "TTS failed" });
   }
 });
 
-module.exports = router; // ✅ Correct export
+module.exports = router;
