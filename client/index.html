@@ -1,11 +1,9 @@
-<!-- ========================================
-     public/index.html - Main Portal
-     ======================================== -->
+<!-- public/index.html - corrected -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Government Public Health Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -33,14 +31,31 @@
       <!-- Chatbot Section -->
       <main class="lg:col-span-2 space-y-6">
         <section class="bg-white rounded-lg shadow-md p-6">
-          <h2 class="text-2xl font-semibold mb-4">🤖 AI Chatbot</h2>
+          <div class="flex justify-between items-center mb-4">
+  <h2 class="text-2xl font-semibold flex items-center gap-2">
+    🤖 AI Chatbot
+  </h2>
+
+  <!-- New Disease Checker Button -->
+  <a 
+    href="./health-checker.html" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-medium shadow"
+  >
+    🔍 Disease Checker
+  </a>
+</div>
+
           <div id="chat" class="bg-gray-50 h-96 overflow-y-auto p-4 rounded mb-4 space-y-2"></div>
-          <form id="form" class="flex gap-2">
-            <input type="text" id="msg" placeholder="Ask about symptoms, vaccines, prevention..." class="flex-1 px-4 py-2 border rounded-lg">
+
+          <form id="form" class="flex gap-2" autocomplete="off">
+            <input type="text" id="msg" placeholder="Ask about symptoms, vaccines, prevention..." class="flex-1 px-4 py-2 border rounded-lg" />
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Send</button>
             <button type="button" id="voiceBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">🎙️</button>
           </form>
-          <p class="text-xs text-gray-500 mt-2">Tip: Click 🎙️ to speak your query</p>
+
+          <p class="text-xs text-gray-500 mt-2">Tip: Click 🎙️ to speak your query (if your browser supports Speech Recognition)</p>
         </section>
 
         <!-- Learn Section -->
@@ -64,13 +79,13 @@
         <section class="bg-white rounded-lg shadow-md p-6">
           <h2 class="text-xl font-semibold mb-4">📲 Subscribe for Updates</h2>
           <form id="subForm" class="space-y-3">
-            <input type="tel" id="phone" placeholder="Phone (e.g., 9876543210)" class="w-full px-3 py-2 border rounded">
-            <input type="text" id="name" placeholder="Name (optional)" class="w-full px-3 py-2 border rounded">
+            <input type="tel" id="phone" placeholder="Phone (e.g., 9876543210)" class="w-full px-3 py-2 border rounded" />
+            <input type="text" id="name" placeholder="Name (optional)" class="w-full px-3 py-2 border rounded" />
             <label class="flex items-center gap-2">
-              <input type="checkbox" id="chWhats" checked> WhatsApp
+              <input type="checkbox" id="chWhats" checked /> WhatsApp
             </label>
             <label class="flex items-center gap-2">
-              <input type="checkbox" id="chSms"> SMS
+              <input type="checkbox" id="chSms" /> SMS
             </label>
             <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">Subscribe</button>
           </form>
@@ -81,109 +96,237 @@
   </div>
 
   <script>
+    // ======= Configuration =======
     const SERVER = "http://localhost:5000";
     const langSel = document.getElementById("lang");
     const chatBox = document.getElementById("chat");
     const form = document.getElementById("form");
     const input = document.getElementById("msg");
     const voiceBtn = document.getElementById("voiceBtn");
+    const alertsEl = document.getElementById("alerts");
+    const categorySelect = document.getElementById("categorySelect");
+    const learnList = document.getElementById("learnList");
+    const subResult = document.getElementById("subResult");
 
-    let savedLang = localStorage.getItem("preferredLang") || "en";
-    langSel.value = savedLang;
+    // ======= Helpers =======
+    function escapeHTML(s = "") {
+      return String(s)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
     function getLang() {
       return localStorage.getItem("preferredLang") || "en";
     }
 
+    // Load saved language
+    (function initLang() {
+      const saved = getLang();
+      langSel.value = saved;
+    })();
+
     langSel.addEventListener("change", (e) => {
       localStorage.setItem("preferredLang", e.target.value);
+      // reload dynamic content to reflect language change
+      loadAlerts();
+      loadCategories().then(() => loadEntries(categorySelect.value));
     });
 
-    function addBubble(role, text) {
+    // ======= Chat UI =======
+    function addBubble(role, text, data = {}) {
+      // Create wrapper
       const wrap = document.createElement("div");
-      wrap.className = role === "user" ? "text-right" : "text-left";
-      const bubble = document.createElement("div");
-      bubble.className = (role === "user" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900") + " inline-block px-3 py-2 rounded";
-      bubble.textContent = text;
-      wrap.appendChild(bubble);
+      wrap.className = role === "user" ? "flex justify-end" : "flex justify-start";
 
+      const inner = document.createElement("div");
+      inner.className = (role === "user" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900") + " inline-block px-3 py-2 rounded max-w-[80%] break-words";
+
+      inner.textContent = text;
+      wrap.appendChild(inner);
+
+      // bot audio play button
       if (role === "bot") {
+        const controls = document.createElement("div");
+        controls.className = "ml-2 flex items-center gap-2";
+
         const playBtn = document.createElement("button");
+        playBtn.type = "button";
         playBtn.textContent = "🔊";
-        playBtn.className = "ml-2 text-blue-600 hover:text-blue-800";
-        playBtn.addEventListener("click", async () => {
-          playBtn.textContent = "🎧 Playing...";
-          const audio = new Audio(`${SERVER}/api/tts?text=${encodeURIComponent(text)}&lang=${getLang()}&stream=true`);
-          audio.play();
-          audio.onended = () => (playBtn.textContent = "🔊");
+        playBtn.className = "text-blue-600 hover:text-blue-800";
+
+        let playingAudio = null;
+
+        playBtn.addEventListener("click", () => {
+          // toggle play: create audio each time (clean)
+          try {
+            playBtn.disabled = true;
+            playBtn.textContent = "🎧 Loading...";
+            const audioUrl = `${SERVER}/api/tts?text=${encodeURIComponent(text)}&lang=${getLang()}&stream=true`;
+            playingAudio = new Audio(audioUrl);
+            playingAudio.play().catch((err) => {
+              console.warn("Audio playback failed:", err);
+              alert("Audio playback failed");
+            });
+            playingAudio.onended = () => {
+              playBtn.textContent = "🔊";
+              playBtn.disabled = false;
+            };
+            // If user stops, reset UI
+            setTimeout(() => {
+              if (playingAudio && !playingAudio.paused) {
+                // let it play
+              } else {
+                playBtn.textContent = "🔊";
+                playBtn.disabled = false;
+              }
+            }, 1000);
+          } catch (e) {
+            console.warn(e);
+            playBtn.textContent = "🔊";
+            playBtn.disabled = false;
+          }
         });
-        wrap.appendChild(playBtn);
+
+        controls.appendChild(playBtn);
+        wrap.appendChild(controls);
       }
 
       chatBox.appendChild(wrap);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
+    // ======= Chat network =======
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const msg = input.value.trim();
       if (!msg) return;
       addBubble("user", msg);
       input.value = "";
+
+      // Show a temporary bot bubble while waiting
+      const waitingId = "waiting-" + Date.now();
+      addBubble("bot", "Typing...");
+
       try {
         const res = await fetch(`${SERVER}/api/chat?lang=${getLang()}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: msg }),
         });
+
+        // Remove the last "Typing..." bubble
+        const last = chatBox.lastElementChild;
+        if (last && last.textContent && last.textContent.includes("Typing")) {
+          chatBox.removeChild(last);
+        }
+
+        if (!res.ok) {
+          addBubble("bot", `Server error: ${res.status}`);
+          return;
+        }
+
         const data = await res.json();
-        addBubble("bot", data.reply || "No answer found.");
-      } catch {
+        // server may return { reply } or { reply: '', message: '' }
+        const reply = data.reply || data.message || "No answer found.";
+        addBubble("bot", reply);
+      } catch (err) {
+        // remove "Typing..." bubble
+        const last = chatBox.lastElementChild;
+        if (last && last.textContent && last.textContent.includes("Typing")) {
+          chatBox.removeChild(last);
+        }
         addBubble("bot", "Network error.");
+        console.error("Chat request failed:", err);
       }
     });
 
-    let rec;
-    if ("webkitSpeechRecognition" in window) {
-      rec = new webkitSpeechRecognition();
+    // ======= Speech recognition =======
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    let rec = null;
+    if (SpeechRec) {
+      rec = new SpeechRec();
       rec.continuous = false;
+      rec.interimResults = false;
       rec.onresult = (e) => {
-        input.value = e.results[0][0].transcript;
-        form.requestSubmit();
+        try {
+          const transcript = e.results[0][0].transcript;
+          input.value = transcript;
+          form.requestSubmit();
+        } catch (err) {
+          console.warn("Speech result handling error", err);
+        }
+      };
+      rec.onerror = (ev) => {
+        console.warn("Speech error:", ev);
+        voiceBtn.textContent = "🎙️";
+      };
+      rec.onend = () => {
+        voiceBtn.textContent = "🎙️";
       };
     }
 
     voiceBtn.addEventListener("click", () => {
-      if (!rec) return alert("Speech not supported.");
-      rec.lang = getLang() === "hi" ? "hi-IN" : getLang() === "or" ? "or-IN" : "en-IN";
-      rec.start();
-      voiceBtn.textContent = "🎧 Listening...";
-      rec.onend = () => (voiceBtn.textContent = "🎙️");
+      if (!rec) return alert("Speech recognition not supported in this browser.");
+      try {
+        rec.lang = getLang() === "hi" ? "hi-IN" : getLang() === "or" ? "or-IN" : "en-IN";
+        voiceBtn.textContent = "🎧 Listening...";
+        rec.start();
+      } catch (err) {
+        voiceBtn.textContent = "🎙️";
+        console.warn("Failed to start recognition:", err);
+        alert("Could not start speech recognition.");
+      }
     });
 
-    const alertsEl = document.getElementById("alerts");
+    // ======= Alerts =======
     document.getElementById("refreshAlerts").addEventListener("click", loadAlerts);
 
     async function loadAlerts() {
-      alertsEl.innerHTML = "Loading...";
+      alertsEl.innerHTML = "<li>Loading...</li>";
       try {
         const res = await fetch(`${SERVER}/api/alerts?lang=${getLang()}`);
+        if (!res.ok) {
+          alertsEl.innerHTML = "<li>Failed to load alerts.</li>";
+          return;
+        }
         const arr = await res.json();
-        alertsEl.innerHTML = arr.map((a) => `<li><strong>${a.title}</strong>: ${a.description}</li>`).join("");
-      } catch {
-        alertsEl.innerHTML = "Failed to load.";
+        if (!Array.isArray(arr) || arr.length === 0) {
+          alertsEl.innerHTML = "<li>No active alerts.</li>";
+          return;
+        }
+
+        // Build safe list
+        alertsEl.innerHTML = "";
+        arr.forEach(a => {
+          const li = document.createElement("li");
+          li.innerHTML = `<strong>${escapeHTML(a.title || "")}</strong>: ${escapeHTML(a.description || "")}`;
+          alertsEl.appendChild(li);
+        });
+      } catch (err) {
+        console.error("loadAlerts failed:", err);
+        alertsEl.innerHTML = "<li>Failed to load.</li>";
       }
     }
-    loadAlerts();
 
-    const subForm = document.getElementById("subForm");
-    subForm.addEventListener("submit", async (e) => {
+    // ======= Subscribe =======
+    document.getElementById("subForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      subResult.textContent = "";
+
       const phone = document.getElementById("phone").value.trim();
       const name = document.getElementById("name").value.trim();
       const channels = [];
       if (document.getElementById("chWhats").checked) channels.push("whatsapp");
       if (document.getElementById("chSms").checked) channels.push("sms");
+      if (!channels.length) channels.push("whatsapp"); // default
+
+      if (!phone) {
+        subResult.textContent = "Please enter phone number.";
+        return;
+      }
 
       try {
         const res = await fetch(`${SERVER}/api/subscribe`, {
@@ -191,38 +334,81 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phone_number: phone, name, preferred_language: getLang(), channels }),
         });
+
         const data = await res.json();
-        document.getElementById("subResult").textContent = data.ok ? "✅ Subscribed!" : "❌ Failed";
-      } catch {
-        document.getElementById("subResult").textContent = "Network error";
+        if (res.ok && data.ok) {
+          subResult.textContent = "✅ Subscribed!";
+        } else {
+          subResult.textContent = "❌ Failed to subscribe";
+          console.warn("Subscribe error response:", data);
+        }
+      } catch (err) {
+        subResult.textContent = "Network error";
+        console.error("Subscribe failed:", err);
       }
     });
 
-    const categorySelect = document.getElementById("categorySelect");
-    const learnList = document.getElementById("learnList");
-
+    // ======= Learn categories & entries =======
     async function loadCategories() {
+      categorySelect.innerHTML = `<option value="">All</option>`;
       try {
         const res = await fetch(`${SERVER}/api/learn/categories?lang=${getLang()}`);
+        if (!res.ok) return;
         const cats = await res.json();
-        categorySelect.innerHTML = `<option value="">All</option>` + cats.map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
-      } catch {}
+        cats.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c.id;
+          opt.textContent = c.name;
+          categorySelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.warn("loadCategories failed:", err);
+      }
     }
 
     async function loadEntries(categoryId = "") {
+      learnList.innerHTML = "<div>Loading...</div>";
       try {
         const url = new URL(`${SERVER}/api/learn/entries`);
         if (categoryId) url.searchParams.set("categoryId", categoryId);
         url.searchParams.set("lang", getLang());
         const res = await fetch(url);
+        if (!res.ok) {
+          learnList.innerHTML = "<div>Failed to load entries</div>";
+          return;
+        }
         const items = await res.json();
-        learnList.innerHTML = items.map((i) => `<div class="border-l-4 border-blue-500 pl-4"><strong>${i.title}</strong><p class="text-sm text-gray-600">${i.content}</p></div>`).join("");
-      } catch {}
+        learnList.innerHTML = "";
+        if (!Array.isArray(items) || items.length === 0) {
+          learnList.innerHTML = "<div>No entries found.</div>";
+          return;
+        }
+        items.forEach(i => {
+          const card = document.createElement("div");
+          card.className = "border-l-4 border-blue-500 pl-4";
+          const title = document.createElement("strong");
+          title.innerHTML = escapeHTML(i.title || "");
+          const p = document.createElement("p");
+          p.className = "text-sm text-gray-600";
+          p.innerHTML = escapeHTML(i.content ? i.content.slice(0, 300) : "");
+          card.appendChild(title);
+          card.appendChild(p);
+          learnList.appendChild(card);
+        });
+      } catch (err) {
+        console.error("loadEntries failed:", err);
+        learnList.innerHTML = "<div>Failed to load.</div>";
+      }
     }
 
-    loadCategories();
-    loadEntries();
     categorySelect.addEventListener("change", () => loadEntries(categorySelect.value));
+
+    // ======= Initial load =======
+    loadAlerts();
+    loadCategories().then(() => loadEntries());
+
+    // Optional: small welcome message
+    addBubble("bot", "Hello! Ask me about symptoms, vaccines, prevention, or type 'help'.");
   </script>
 </body>
 </html>

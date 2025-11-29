@@ -1,43 +1,41 @@
 // utils/sendWhatsApp.js
 const twilio = require("twilio");
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 /**
- * ✅ Sends a WhatsApp message (text or media)
- * @param {string} to - Recipient number (e.g., +919045141958)
- * @param {string} content - Message text or media URL
- * @param {boolean} isMedia - true for media message
+ * Normalize phone:
+ * - If already starts with '+' keep it (assume includes country code)
+ * - If starts with leading 0, strip and add +91
+ * - Else, assume Indian local number and add +91
  */
+function normalizePhone(to) {
+  let s = String(to).trim();
+  s = s.replace(/\s+/g, "");
+
+  if (s.startsWith("+")) return s;         // already has country code
+  if (s.startsWith("0")) s = s.replace(/^0+/, ""); // drop leading zeros
+  // fallback: assume India if no plus sign present
+  return s.startsWith("91") ? `+${s}` : `+91${s}`;
+}
+
 async function sendWhatsApp(to, content, isMedia = false) {
   try {
-    // ✅ Clean and format recipient
-    const formattedTo = to
-      .toString()
-      .replace(/\s+/g, "")           // remove spaces
-      .replace(/^(\+91)?/, "+91")    // ensure country code (India by default)
-      .replace(/^whatsapp:/, "");    // remove duplicate prefix if exists
-
+    const formattedTo = normalizePhone(to);
     const msgData = {
-      from: process.env.TWILIO_WHATSAPP_NUMBER, // ✅ already includes 'whatsapp:'
-      to: `whatsapp:${formattedTo}`,
+      from: process.env.TWILIO_WHATSAPP_NUMBER, // should be 'whatsapp:+123456...'
+      to: `whatsapp:${formattedTo}`
     };
 
-    if (isMedia) {
-      msgData.mediaUrl = [content];
-    } else {
-      msgData.body = content;
-    }
+    if (isMedia) msgData.mediaUrl = [content];
+    else msgData.body = content;
 
     const msg = await client.messages.create(msgData);
     console.log(`✅ WhatsApp ${isMedia ? "media" : "text"} sent to ${formattedTo} | SID: ${msg.sid}`);
     return msg.sid;
   } catch (err) {
-    console.error(`❌ Failed to send WhatsApp to ${to}:`, err.message);
+    console.error(`❌ Failed to send WhatsApp to ${to}:`, err && err.message ? err.message : err);
     throw err;
   }
 }
 
-module.exports = { sendWhatsApp };
+module.exports = { sendWhatsApp, normalizePhone };

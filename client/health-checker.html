@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Disease Probability Checker</title>
+    <!-- Tailwind CDN for styling (development use) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* small fixes so mobile and desktop look decent */
+      body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+      .round-card { border-radius: 14px; }
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-6">
+    <div id="root" class="max-w-5xl mx-auto"></div>
+
+    <!-- React + ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for in-browser JSX transpile (development only) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- App code (JSX) -->
+    <script type="text/babel">
+      const { useState } = React;
+
+      // ----- disease database -----
+      const diseases = {
+        "Influenza (Flu)": {
+          symptoms: ["fever","cough","sore throat","muscle aches","fatigue","cold","chills","headache","body pain"],
+          description: "Influenza is a seasonal viral infection causing fever, cough, sore throat, muscle aches, and fatigue.",
+          advice: "Rest, stay hydrated, take antivirals if prescribed. High-risk groups should get vaccinated.",
+          severity: "Moderate - May need hospitalization in severe cases"
+        },
+        "Common Cold": {
+          symptoms: ["runny nose","sneezing","sore throat","cough","congestion","cold","mild fever","headache"],
+          description: "A viral infection of the upper respiratory tract causing mild symptoms.",
+          advice: "Rest, drink fluids, use over-the-counter medications for symptom relief.",
+          severity: "Mild - Usually resolves in 7-10 days"
+        },
+        "COVID-19": {
+          symptoms: ["fever","cough","fatigue","loss of taste","loss of smell","difficulty breathing","body aches","sore throat","headache","cold"],
+          description: "Viral respiratory illness caused by SARS-CoV-2 coronavirus.",
+          advice: "Isolate, get tested, monitor oxygen levels. Seek medical care if breathing difficulty.",
+          severity: "Varies - Can range from mild to severe"
+        },
+        "Pneumonia": {
+          symptoms: ["fever","cough","chest pain","difficulty breathing","fatigue","chills","sweating","confusion"],
+          description: "Infection that inflames air sacs in lungs, which may fill with fluid.",
+          advice: "Seek medical attention immediately. May require antibiotics or hospitalization.",
+          severity: "Serious - Requires medical treatment"
+        },
+        "Bronchitis": {
+          symptoms: ["cough","mucus","fatigue","chest discomfort","mild fever","shortness of breath","wheezing"],
+          description: "Inflammation of the bronchial tubes carrying air to lungs.",
+          advice: "Rest, drink fluids, avoid irritants. See doctor if symptoms persist.",
+          severity: "Moderate - Usually improves in 2-3 weeks"
+        },
+        "Malaria": {
+          symptoms: ["fever","chills","sweating","headache","nausea","vomiting","muscle pain","fatigue"],
+          description: "Parasitic disease transmitted by mosquitoes causing cyclical fever.",
+          advice: "Seek immediate medical care. Requires antimalarial medication.",
+          severity: "Serious - Can be life-threatening if untreated"
+        },
+        "Dengue Fever": {
+          symptoms: ["high fever","severe headache","pain behind eyes","joint pain","muscle pain","rash","nausea","vomiting"],
+          description: "Mosquito-borne viral infection causing high fever and severe pain.",
+          advice: "Rest, drink plenty of fluids, take acetaminophen. Avoid aspirin. Monitor for warning signs.",
+          severity: "Can be severe - Watch for bleeding or severe abdominal pain"
+        },
+        "Migraine": {
+          symptoms: ["severe headache","nausea","vomiting","sensitivity to light","sensitivity to sound","visual disturbances"],
+          description: "Neurological condition causing intense, debilitating headaches.",
+          advice: "Rest in dark quiet room, take prescribed medication, identify triggers.",
+          severity: "Moderate to Severe - Can significantly impact daily life"
+        }
+      };
+
+      // ----- utility functions -----
+      function normalizeTokens(text){
+        return text
+          .toLowerCase()
+          .split(',')
+          .map(s=>s.trim())
+          .filter(Boolean);
+      }
+
+      function calculateProbabilities(inputSymptoms){
+        const symptomsArray = normalizeTokens(inputSymptoms);
+        if(symptomsArray.length === 0) return [];
+
+        const priorProbability = 1 / Object.keys(diseases).length;
+        const results = [];
+
+        for(const [diseaseName, diseaseData] of Object.entries(diseases)){
+          let matchCount = 0;
+          const totalSymptoms = symptomsArray.length;
+
+          symptomsArray.forEach(symptom => {
+            if(
+              diseaseData.symptoms.some(ds =>
+                ds === symptom || ds.includes(symptom) || symptom.includes(ds) || ds.split(' ').some(w => symptom.includes(w))
+              )
+            ){
+              matchCount++;
+            }
+          });
+
+          if(matchCount > 0){
+            const symptomMatchRatio = matchCount / totalSymptoms;
+            const diseaseSymptomCount = diseaseData.symptoms.length;
+            const coverageBonus = matchCount / diseaseSymptomCount;
+            const likelihood = (symptomMatchRatio * 0.7) + (coverageBonus * 0.3);
+            const posteriorScore = likelihood * priorProbability;
+
+            results.push({
+              disease: diseaseName,
+              probabilityScore: posteriorScore,
+              matchCount,
+              totalSymptoms,
+              description: diseaseData.description,
+              advice: diseaseData.advice,
+              severity: diseaseData.severity
+            });
+          }
+        }
+
+        const totalScore = results.reduce((s,r) => s + r.probabilityScore, 0) || 1;
+        results.forEach(r => r.probability = ((r.probabilityScore / totalScore) * 100).toFixed(1));
+        results.sort((a,b) => parseFloat(b.probability) - parseFloat(a.probability));
+        return results;
+      }
+
+      // ----- React component -----
+      function DiseaseProbabilityChecker(){
+        const [symptoms, setSymptoms] = useState('');
+        const [results, setResults] = useState(null);
+        const [error, setError] = useState(null);
+        const [loading, setLoading] = useState(false);
+
+        const handleCheck = () => {
+          setError(null);
+          setResults(null);
+          if(!symptoms.trim()){
+            setError('Please enter your symptoms.');
+            return;
+          }
+          setLoading(true);
+          setTimeout(() => {
+            const r = calculateProbabilities(symptoms);
+            setResults(r);
+            setLoading(false);
+          }, 200); // small delay for UX
+        };
+
+        const speak = (text) => {
+          if('speechSynthesis' in window){
+            const u = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(u);
+          }
+        };
+
+        return (
+          <div className="bg-white round-card shadow-xl p-8 mb-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="text-3xl">🩺</div>
+              <h1 className="text-3xl font-bold text-gray-800">Disease Probability Checker</h1>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Enter your symptoms (comma-separated):</label>
+              <input
+                type="text"
+                value={symptoms}
+                onChange={(e) => setSymptoms(e.target.value)}
+                placeholder="e.g., fever, cold, cough, headache"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCheck}
+                disabled={loading}
+                className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+              >
+                {loading ? 'Analyzing...' : 'Analyze Symptoms'}
+              </button>
+
+              <button
+                onClick={() => { setSymptoms(''); setResults(null); setError(null); }}
+                className="bg-gray-100 text-gray-800 py-3 px-4 rounded-lg border"
+              >Reset</button>
+            </div>
+
+            {error && <p className="text-red-600 mt-3 text-sm">{error}</p>}
+
+            {/* Results */}
+            {results && results.length > 0 && (
+              <div className="space-y-4 mt-6">
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="text-indigo-600">📊</div>
+                    <h2 className="text-2xl font-bold text-gray-800">Probability Results</h2>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">Based on a simple matching algorithm. Showing {results.length} possible condition(s).</p>
+                </div>
+
+                {results.map((result, index) => (
+                  <div key={index} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">{index + 1}. {result.disease}</h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                          <span className="bg-blue-100 px-3 py-1 rounded-full">Matched {result.matchCount}/{result.totalSymptoms} symptoms</span>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-indigo-600">{result.probability}%</div>
+                        <div className="text-sm text-gray-500">Probability</div>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" style={{ width: `${result.probability}%` }} />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <p className="text-gray-700 leading-relaxed">{result.description}</p>
+
+                      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                        <div className="flex items-start gap-2">
+                          <div>⚠️</div>
+                          <div>
+                            <p className="font-semibold text-yellow-800 text-sm mb-1">Severity</p>
+                            <p className="text-yellow-700 text-sm">{result.severity}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                        <p className="font-semibold text-green-800 text-sm mb-1">Recommended Action</p>
+                        <p className="text-green-700 text-sm">{result.advice}</p>
+                      </div>
+                    </div>
+
+                    <button onClick={() => speak(result.description + '. ' + result.advice)} className="mt-4 text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-2">🔊 Read Aloud</button>
+                  </div>
+                ))}
+
+                <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+                  <p className="text-red-800 font-semibold mb-2">⚠️ Important Disclaimer</p>
+                  <p className="text-red-700 text-sm">This is an educational tool for demonstration. It is NOT a substitute for professional medical diagnosis. Consult a qualified healthcare provider.</p>
+                </div>
+              </div>
+            )}
+
+            {results && results.length === 0 && (
+              <div className="bg-white rounded-xl shadow-lg p-8 text-center mt-6">
+                <p className="text-gray-600">No matching diseases found. Try different or more specific symptoms.</p>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      // ----- mount -----
+      function App(){
+        return (
+          <div className="min-h-screen p-6">
+            <div className="max-w-4xl mx-auto">
+              <DiseaseProbabilityChecker />
+              <div className="text-center mt-6 text-sm text-gray-600">Link this file from your main site as <code>/health-checker.html</code> and open in a new tab</div>
+            </div>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+
+      // ----- helper speak placed in global scope for buttons inside map -----
+      function speak(text){
+        if('speechSynthesis' in window){
+          const u = new SpeechSynthesisUtterance(text);
+          window.speechSynthesis.speak(u);
+        }
+      }
+    </script>
+  </body>
+</html>
